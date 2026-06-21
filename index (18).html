@@ -1,0 +1,2549 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+	<title>MONK MINER × HYDRO PROTECTOR — v1.0</title>
+	<style>
+		* { box-sizing:border-box; margin:0; padding:0; }
+		body { font-family: 'Rajdhani','Orbitron',sans-serif; }
+		:root{
+			--gold:#FFD700; --gold-dark:#B8860B; --gold-light:#FFE55C;
+			--red-blood:#8B0000; --red-bright:#CC0000; --red-glow:#FF2020;
+			--panel-border:#1e2a3a; --card-bg:#111827;
+			--text-dim:#7a8a9a; --green-ok:#00e676; --orange-fault:#ff6d00;
+		}
+		@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+		.dashboard{ background:#060810; min-height:100vh; color:#e0e8f0; font-family:'Rajdhani',sans-serif; }
+		.header{
+			background:linear-gradient(180deg,#0a0e18 0%,#060810 100%);
+			border-bottom:2px solid #1a2535;
+			padding:18px 20px 14px;
+			text-align:center;
+			position:relative;
+			overflow:hidden;
+		}
+		.header::before{
+			content:'';
+			position:absolute;
+			top:0; left:0; right:0;
+			height:2px;
+			background:linear-gradient(90deg,transparent,var(--gold),transparent);
+		}
+		.header-title{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+		.title-gold{
+			font-family:'Orbitron',sans-serif;
+			font-size:clamp(14px,3.5vw,22px);
+			font-weight:900;
+			background:linear-gradient(135deg,#B8860B 0%,#FFD700 40%,#FFE55C 60%,#B8860B 100%);
+			-webkit-background-clip:text;
+			-webkit-text-fill-color:transparent;
+			background-clip:text;
+			letter-spacing:2px;
+			filter:drop-shadow(0 0 8px rgba(255,215,0,.5));
+			transform:perspective(200px) rotateX(5deg);
+		}
+		.title-red{
+			font-family:'Orbitron',sans-serif;
+			font-size:clamp(16px,4vw,26px);
+			font-weight:900;
+			background:linear-gradient(135deg,#4a0000 0%,#8B0000 30%,#CC0000 55%,#FF2020 70%,#8B0000 100%);
+			-webkit-background-clip:text;
+			-webkit-text-fill-color:transparent;
+			background-clip:text;
+			filter:drop-shadow(0 0 10px rgba(204,0,0,.7));
+			transform:perspective(200px) rotateX(5deg);
+			letter-spacing:3px;
+		}
+		.header-sub{
+			font-size:14px;
+			color:var(--text-dim);
+			letter-spacing:4px;
+			text-transform:uppercase;
+			margin-top:4px;
+		}
+		.main-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:12px; }
+		@media(max-width:600px){ .main-grid{ grid-template-columns:1fr; } }
+		.panel-full{ grid-column:1 / -1; }
+		.panel{
+			background:var(--card-bg);
+			border:1px solid var(--panel-border);
+			border-radius:12px;
+			padding:14px;
+			position:relative;
+			overflow:hidden;
+		}
+		.panel::before{
+			content:'';
+			position:absolute;
+			top:0; left:0; right:0;
+			height:1px;
+			background:linear-gradient(90deg,transparent,var(--gold),transparent);
+			opacity:.4;
+		}
+		.panel-title{
+			font-family:'Orbitron',sans-serif;
+			font-size:14px;
+			letter-spacing:3px;
+			color:var(--gold-dark);
+			text-transform:uppercase;
+			margin-bottom:12px;
+			display:flex;
+			align-items:center;
+			gap:6px;
+		}
+		.panel-title::after{
+			content:'';
+			flex:1;
+			height:1px;
+			background:linear-gradient(90deg,var(--gold-dark),transparent);
+			opacity:.4;
+		}
+		.circle-container{ display:flex; flex-direction:column; align-items:center; justify-content:center; }
+		.pressure-ring{ position:relative; width:140px; height:140px; }
+		.pressure-ring svg{ transform:rotate(-90deg); position:absolute; top:0; left:0; }
+		.pressure-inner{
+			position:absolute;
+			inset:12px;
+			border-radius:50%;
+			background:radial-gradient(circle at 40% 35%,#1a2535,#0a0e18);
+			border:1px solid #1e2a3a;
+			display:flex;
+			flex-direction:column;
+			align-items:center;
+			justify-content:center;
+		}
+		.pressure-value{ font-family:'Orbitron',sans-serif; font-size:30px; font-weight:700; color:var(--gold-light); line-height:1; }
+		.pressure-unit{ font-size:13px; color:var(--text-dim); letter-spacing:2px; margin-top:2px; }
+		.pressure-label{ font-size:15px; color:var(--gold-dark); margin-top:8px; letter-spacing:2px; text-transform:uppercase; }
+		.live-dot{
+			display:inline-block;
+			width:7px; height:7px;
+			border-radius:50%;
+			background:var(--green-ok);
+			margin-right:4px;
+			animation:blink 1s infinite;
+		}
+		@keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.2} }
+
+		/* ESP MODE INDICATOR RING */
+		.esp-mode-ring{
+			width:140px; height:140px;
+			position:relative;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			transition:all .4s ease;
+			flex-shrink:0;
+			border-radius:50%;
+			overflow:hidden;
+		}
+		.esp-mode-ring .ring-svg{
+			position:absolute;
+			top:0; left:0;
+			width:140px; height:140px;
+			overflow:hidden;
+		}
+		.esp-mode-ring .ring-inner{
+			position:relative;
+			z-index:1;
+			display:flex;
+			flex-direction:column;
+			align-items:center;
+			justify-content:center;
+		}
+		.esp-running-text{
+			font-family:'Orbitron',sans-serif;
+			font-size:8px;
+			letter-spacing:2px;
+			text-transform:uppercase;
+			text-align:center;
+			line-height:1.5;
+			transition:color .4s;
+			color:var(--text-dim);
+		}
+		.esp-mode-ring.m1 .esp-running-text{ color:rgba(255,215,0,.8); }
+		.esp-mode-ring.m2 .esp-running-text{ color:rgba(255,215,0,.8); }
+		.esp-mode-ring.m3 .esp-running-text{ color:rgba(255,215,0,.8); }
+		.esp-mode-num{
+			font-family:'Orbitron',sans-serif;
+			font-size:44px;
+			font-weight:900;
+			line-height:1;
+			letter-spacing:-2px;
+			color:var(--gold-light);
+			transition:color .4s, text-shadow .4s;
+		}
+		.esp-mode-ring.m1 .esp-mode-num{ color:#FFD700; text-shadow:0 0 18px rgba(255,215,0,.7),0 0 40px rgba(255,215,0,.3); }
+		.esp-mode-ring.m2 .esp-mode-num{ color:#FFD700; text-shadow:0 0 18px rgba(255,215,0,.7),0 0 40px rgba(255,215,0,.3); }
+		.esp-mode-ring.m3 .esp-mode-num{ color:#FFD700; text-shadow:0 0 18px rgba(255,215,0,.7),0 0 40px rgba(255,215,0,.3); }
+		.esp-uptime{
+			font-family:'Orbitron',sans-serif;
+			font-size:12px;
+			letter-spacing:1px;
+			color:var(--text-dim);
+			margin-top:8px;
+			text-align:center;
+		}
+		.uptime-val{ color:var(--gold-light); }
+
+		/* STATUS RING */
+		.status-ring{
+			width:140px; height:140px;
+			position:relative;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			flex-shrink:0;
+			transition:all .4s ease;
+			border-radius:50%;
+			overflow:hidden;
+		}
+		.status-ring .ring-svg{
+			position:absolute;
+			top:0; left:0;
+			width:140px; height:140px;
+		}
+		.status-ring .ring-inner{
+			position:relative;
+			z-index:1;
+			display:flex;
+			flex-direction:column;
+			align-items:center;
+			justify-content:center;
+		}
+		.status-icon{
+			font-size:34px; margin-bottom:2px; transition:all .4s;
+			color:var(--green-ok);
+			text-shadow:0 0 10px rgba(0,230,118,.9), 0 0 22px rgba(0,230,118,.6);
+			animation: iconSpin 2s linear infinite;
+			display:inline-block;
+		}
+		@keyframes iconSpin{
+			0%   { transform:rotate(0deg); }
+			100% { transform:rotate(360deg); }
+		}
+		.status-ring{ --spark-color: var(--green-ok); }
+		.esp-mode-ring{ --spark-color: var(--gold); }
+		#pressure-ring-wrap{ --spark-color: var(--green-ok); }
+		.status-ring .ring-inner::after,
+		.esp-mode-ring .ring-inner::after{
+			content:'';
+			position:absolute;
+			top:50%; left:50%;
+			width:10px; height:10px;
+			margin:-5px 0 0 -5px;
+			border-radius:50%;
+			background:var(--spark-color);
+			box-shadow:0 0 8px var(--spark-color);
+			opacity:0;
+			animation: sparkleRelease 2s ease-out infinite;
+			pointer-events:none;
+			z-index:0;
+		}
+		@keyframes sparkleRelease{
+			0%   { transform:scale(1);   opacity:.22; }
+			70%  { transform:scale(11);  opacity:.04; }
+			100% { transform:scale(13);  opacity:0; }
+		}
+		.status-text{
+			font-family:'Orbitron',sans-serif;
+			font-size:15px;
+			font-weight:700;
+			letter-spacing:2px;
+			color:var(--green-ok);
+			transition:color .4s, text-shadow .4s;
+			text-shadow:0 0 18px rgba(0,230,118,.7),0 0 40px rgba(0,230,118,.3);
+		}
+		.status-ring.fault .status-text{
+			color:#FF2020;
+			text-shadow:0 0 18px rgba(255,32,32,.8),0 0 40px rgba(255,32,32,.4);
+		}
+		.status-sub{ font-size:13px; color:var(--text-dim); margin-top:3px; letter-spacing:1px; }
+
+		/* MODE BUTTONS */
+		.mode-btns{ display:flex; gap:8px; flex-wrap:wrap; }
+		.mode-btn{
+			flex:1;
+			min-width:70px;
+			padding:10px 8px;
+			border-radius:8px;
+			border:1px solid #2a3a4a;
+			background:#0d1520;
+			color:var(--text-dim);
+			font-family:'Orbitron',sans-serif;
+			font-size:13px;
+			letter-spacing:2px;
+			cursor:pointer;
+			transition:all .2s;
+			text-align:center;
+			position:relative;
+			overflow:hidden;
+		}
+		.mode-btn.active{
+			border-color:var(--gold);
+			background:linear-gradient(180deg,#1a1500 0%,#0d0a00 100%);
+			color:var(--gold-light);
+			box-shadow:0 0 14px rgba(255,215,0,.2), inset 0 14px rgba(255,215,0,.05);
+		}
+		.mode-btn.esp-running{ }
+		.mode-num{ font-size:26px; font-weight:700; display:block; margin-bottom:2px; }
+		.mode-esp-badge{
+			display:none;
+			font-size:10px;
+			letter-spacing:1px;
+			color:var(--green-ok);
+			margin-top:2px;
+		}
+		.mode-btn.esp-running .mode-esp-badge{ display:block; }
+
+		.val-btn{
+			width:36px; height:36px;
+			border-radius:4px;
+			border:1px solid var(--gold-dark);
+			background:linear-gradient(180deg,#241b00 0%,#120e00 100%);
+			color:var(--gold);
+			font-size:18px;
+			font-weight:700;
+			cursor:pointer;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			transition:all .15s;
+			line-height:1;
+			padding:0;
+			box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
+			position:relative;
+			overflow:hidden;
+		}
+		.val-btn::after{
+			content:'';
+			position:absolute;
+			top:50%; left:50%;
+			width:6px; height:6px;
+			background:rgba(255,215,0,.55);
+			border-radius:50%;
+			transform:translate(-50%,-50%) scale(0);
+			opacity:0;
+			pointer-events:none;
+		}
+		.val-btn:active::after{
+			animation: btnRipple .45s ease-out;
+		}
+		@keyframes btnRipple{
+			0%   { transform:translate(-50%,-50%) scale(0);  opacity:.6; }
+			100% { transform:translate(-50%,-50%) scale(9);  opacity:0; }
+		}
+		.push-btn::after, .esp-btn::after, .mode-btn::after{
+			content:'';
+			position:absolute;
+			top:50%; left:50%;
+			width:6px; height:6px;
+			background:rgba(255,215,0,.55);
+			border-radius:50%;
+			transform:translate(-50%,-50%) scale(0);
+			opacity:0;
+			pointer-events:none;
+		}
+		.push-btn:active::after, .esp-btn:active::after, .mode-btn:active::after{
+			animation: btnRipple .45s ease-out;
+		}
+		.val-btn:hover{ border-color:var(--gold-light); background:linear-gradient(180deg,#332700 0%,#1a1400 100%); box-shadow:0 0 8px rgba(255,215,0,.25); }
+		.val-btn:active{ transform:scale(.94); }
+		.val-display{
+			width:52px;
+			text-align:center;
+			font-family:'Orbitron',sans-serif;
+			font-size:18px;
+			font-weight:700;
+			color:var(--gold-light);
+			background:#05070c;
+			border:1px solid #1a2230;
+			border-radius:4px;
+			padding:3px 0;
+		}
+		.value-selector{ display:flex; align-items:center; gap:6px; }
+		.num-input{
+			width:100%;
+			background:#0a0e18;
+			border:1px solid #2a3a4a;
+			border-radius:5px;
+			color:var(--gold-light);
+			font-family:'Orbitron',sans-serif;
+			font-size:16px;
+			padding:7px 8px;
+			text-align:center;
+			outline:none;
+			transition:border-color .2s;
+		}
+		.num-input:focus{ border-color:var(--gold); }
+		.restart-btn{
+			width:100%;
+			padding:10px;
+			border-radius:8px;
+			border:1px solid var(--red-blood);
+			background:linear-gradient(180deg,#1a0505 0%,#0a0202 100%);
+			color:var(--red-bright);
+			font-family:'Orbitron',sans-serif;
+			font-size:15px;
+			letter-spacing:3px;
+			cursor:pointer;
+			transition:all .2s;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:8px;
+			position:relative;
+			overflow:hidden;
+			margin-top:4px;
+		}
+		.restart-btn:hover{
+			border-color:var(--red-bright);
+			box-shadow:0 0 14px rgba(204,0,0,.3);
+			color:var(--red-glow);
+		}
+		.restart-btn.firing{ animation:restart-flash .6s ease; }
+		@keyframes restart-flash{
+			0%{box-shadow:0 0 0 rgba(204,0,0,0)}
+			30%{box-shadow:0 0 30px rgba(204,0,0,.6), inset 0 0 20px rgba(204,0,0,.2)}
+			100%{box-shadow:0 0 0 rgba(204,0,0,0)}
+		}
+		.relay-row{
+			display:flex;
+			align-items:center;
+			justify-content:space-between;
+			padding:10px 12px;
+			border-radius:8px;
+			border:1px solid #1e2a3a;
+			background:#0a0e18;
+			margin-bottom:8px;
+			transition:all .25s;
+		}
+		.relay-row.relay-on{
+			border-color:var(--green-ok);
+			background:#071510;
+			box-shadow:0 0 12px rgba(0,230,118,.15);
+		}
+		.relay-name{
+			font-family:'Orbitron',sans-serif;
+			font-size:15px;
+			letter-spacing:2px;
+			color:var(--text-dim);
+			display:flex;
+			align-items:center;
+			gap:8px;
+		}
+		.relay-row.relay-on .relay-name{ color:var(--gold-light); }
+		.relay-dot{
+			width:10px; height:10px;
+			border-radius:50%;
+			background:#333;
+			transition:all .25s;
+			flex-shrink:0;
+		}
+		.relay-row.relay-on .relay-dot{
+			background:var(--green-ok);
+			box-shadow:0 0 6px var(--green-ok);
+			animation:blink .9s infinite;
+		}
+		.relay-state-txt{ font-family:'Orbitron',sans-serif; font-size:14px; letter-spacing:2px; }
+		.relay-row.relay-on .relay-state-txt{ color:var(--green-ok); }
+		.relay-row.relay-off .relay-state-txt{ color:#cc3300; }
+		.relay-timer{
+			display:none;
+			align-items:center;
+			gap:6px;
+			padding:3px 8px;
+			border-radius:999px;
+			font-family:'Orbitron',sans-serif;
+			font-size:13px;
+			letter-spacing:1px;
+			border:1px solid #2a3a4a;
+			background:#0a0e18;
+			line-height:1;
+		}
+		.relay-timer.show{ display:inline-flex; }
+		.relay-timer.on{
+			border-color:var(--green-ok);
+			color:var(--green-ok);
+			box-shadow:0 0 10px rgba(0,230,118,.18);
+		}
+		.relay-timer.off{
+			border-color:#cc3300;
+			color:#cc3300;
+			box-shadow:0 0 10px rgba(204,51,0,.18);
+		}
+		.toggle-wrap{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+		.toggle{ position:relative; width:46px; height:24px; flex-shrink:0; }
+		.toggle input{ opacity:0; width:0; height:0; }
+		.toggle-slider{
+			position:absolute;
+			cursor:pointer;
+			inset:0;
+			background:#1e2a3a;
+			border-radius:24px;
+			transition:.3s;
+			border:1px solid #2a3a4a;
+		}
+		.toggle-slider::before{
+			content:'';
+			position:absolute;
+			height:18px; width:18px;
+			left:2px; bottom:2px;
+			background:#3a4a5a;
+			border-radius:50%;
+			transition:.3s;
+		}
+		.toggle input:checked + .toggle-slider{
+			background:#0d2015;
+			border-color:var(--green-ok);
+			box-shadow:0 0 8px rgba(0,230,118,.3);
+		}
+		.toggle input:checked + .toggle-slider::before{
+			transform:translateX(22px);
+			background:var(--green-ok);
+			box-shadow:0 0 6px var(--green-ok);
+		}
+		.section-divider{ height:1px; background:linear-gradient(90deg,transparent,#2a3a4a,transparent); margin:10px 0; }
+		.two-circles{ display:flex; gap:16px; align-items:center; justify-content:space-around; flex-wrap:wrap; }
+		.three-circles{ display:flex; gap:16px; align-items:center; justify-content:space-around; flex-wrap:wrap; }
+		.corner-deco{ position:absolute; width:14px; height:14px; border-color:var(--gold-dark); border-style:solid; opacity:.4; }
+		.corner-tl{ top:6px; left:6px; border-width:1px 0 0 1px; }
+		.corner-tr{ top:6px; right:6px; border-width:1px 1px 0 0; }
+		.corner-bl{ bottom:6px; left:6px; border-width:0 0 1px 1px; }
+		.corner-br{ bottom:6px; right:6px; border-width:0 1px 1px 0; }
+		.footer-bar{
+			display:flex;
+			justify-content:space-between;
+			align-items:center;
+			padding:8px 16px;
+			border-top:1px solid var(--panel-border);
+			background:#080a10;
+		}
+		.footer-text{ font-size:13px; color:var(--text-dim); letter-spacing:2px; }
+		.footer-live{ display:flex; align-items:center; gap:5px; font-size:13px; color:var(--green-ok); letter-spacing:2px; }
+		.contactor-card{ padding:12px; border-radius:10px; background:#0a0e18; }
+		.contactor-card .relay-row{ margin-bottom:10px; }
+		.contactor-card .relay-name{ flex:1; min-width:120px; }
+		@media(max-width:600px){
+			.contactor-card .relay-row{ flex-direction:column; align-items:flex-start; gap:8px; }
+			.contactor-card .toggle-wrap{ width:100%; justify-content:space-between; }
+			.contactor-card .relay-state-txt{ font-size:13px; }
+			.val-btn{ width:28px; height:28px; font-size:15px; }
+			.val-display{ width:36px; font-size:14px; padding:3px 0; }
+			.value-selector{ gap:4px; }
+			.timing-grid > div > div:first-child{ font-size:10px !important; letter-spacing:1px !important; white-space:normal; line-height:1.3; min-height:26px; }
+			.timing-grid > div > div:last-child{ font-size:10px !important; }
+			.timing-grid .val-display{ width:28px !important; font-size:12px !important; padding:3px 0 !important; }
+			.timing-grid .val-btn{ width:24px !important; height:24px !important; font-size:13px !important; }
+			.timing-grid .value-selector{ gap:3px !important; }
+			.timing-grid{ gap:4px !important; }
+
+			.three-circles{ flex-wrap:nowrap; gap:4px; justify-content:space-between; }
+			.three-circles .circle-container{ flex:1 1 0; min-width:0; }
+			.three-circles .esp-mode-ring,
+			.three-circles .esp-mode-ring .ring-svg,
+			.three-circles .status-ring,
+			.three-circles .status-ring .ring-svg{ width:76px !important; height:76px !important; }
+			.three-circles .esp-mode-num{ font-size:20px; }
+			.three-circles .esp-running-text{ font-size:5px; }
+			.three-circles #pressure-val{ font-size:16px !important; }
+			.three-circles .status-icon{ font-size:16px; }
+			.three-circles .status-text{ font-size:9px !important; }
+			.three-circles .pressure-label{ font-size:9px; letter-spacing:0.5px; }
+			.three-circles .esp-uptime{ font-size:8px; }
+			.three-circles #prs-live-txt,
+			.three-circles #prs-live-txt2{ font-size:5px !important; }
+			.three-circles .ring-inner div[style*="11px"]{ font-size:7px !important; }
+
+			.mode-btn{ min-width:0; padding:7px 4px; font-size:10px; letter-spacing:1px; }
+			.mode-num{ font-size:18px; margin-bottom:1px; }
+			.mode-esp-badge{ font-size:8px; }
+
+			.footer-bar{ flex-direction:column; gap:6px; text-align:center; padding:10px 16px; }
+			.footer-text{ font-size:11px; }
+			.footer-live{ font-size:11px; }
+
+			.relay-push-grid{ gap:6px !important; }
+			.contactor-card{ padding:8px; }
+			.contactor-card .val-display{ width:32px !important; font-size:13px !important; }
+			.contactor-card div[style*="font-size:13px"]{ font-size:10px !important; margin-bottom:4px !important; }
+			.contactor-card .value-selector{ margin-bottom:8px !important; }
+			.push-btn{ padding:8px 6px; font-size:12px; letter-spacing:1.5px; margin-bottom:8px; }
+			.push-status-box{ padding:5px 8px; font-size:9px; letter-spacing:0.5px; min-height:26px; gap:5px; }
+		}
+
+		.esp-sync-grid{ display:flex; flex-direction:column; gap:12px; }
+		.esp-card{ border-radius:10px; padding:12px; position:relative; overflow:hidden; }
+		.esp-card::before{ content:''; position:absolute; top:0; left:0; right:0; height:1px; opacity:.35; }
+		.esp-card.fetch{ border:1px solid #1a3a2a; background:#060f09; }
+		.esp-card.fetch::before{ background:linear-gradient(90deg,transparent,var(--green-ok),transparent); }
+		.esp-card.update{ border:1px solid #2a1f00; background:#090800; }
+		.esp-card.update::before{ background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+		.esp-card-title{ font-family:'Orbitron',sans-serif; font-size:13px; letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
+		.esp-card.fetch .esp-card-title{ color:#2a8a4a; }
+		.esp-card.update .esp-card-title{ color:var(--gold-dark); }
+		.esp-btn{ width:100%; padding:10px 8px; border-radius:8px; font-family:'Orbitron',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:6px; position:relative; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,.4); }
+		.esp-btn.fetch{ border:1px solid #3fbf6f; background:linear-gradient(180deg,#1a4a2a 0%,#0d2916 100%); color:#baffd0; }
+		.esp-btn.fetch:hover{ border-color:#5fe88f; box-shadow:0 0 14px rgba(0,230,118,.35); }
+		.esp-btn.update{ border:1px solid var(--gold-light); background:linear-gradient(180deg,#4a3a00 0%,#2a2000 100%); color:#fff3c2; }
+		.esp-btn.update:hover{ border-color:var(--gold); box-shadow:0 0 14px rgba(255,215,0,.35); }
+		.esp-data-grid{ margin-top:10px; }
+		.esp-data-row{ display:grid; gap:6px; margin-bottom:6px; }
+		.esp-data-row.row-2{ grid-template-columns:1fr 1fr; }
+		.esp-data-row.row-3{ grid-template-columns:1fr 1fr 1fr; }
+		.esp-data-box{ padding:8px 6px; border-radius:8px; border:1px solid #1a3a2a; background:#040a06; text-align:center; }
+		.esp-data-label{ font-size:10px; color:#3a8a5a; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase; font-weight:600; }
+		.esp-data-value{ font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700; color:var(--gold-light); }
+		.esp-data-unit{ font-size:10px; color:#3a8a5a; margin-top:2px; letter-spacing:1px; }
+		.upd-data-box{ padding:8px 6px; border-radius:8px; border:1px solid #3a2a00; background:#0a0700; text-align:center; }
+		.upd-data-label{ font-size:10px; color:#9a7a2a; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase; font-weight:600; }
+		.upd-data-value{ font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700; color:var(--gold-light); }
+		.upd-data-unit{ font-size:10px; color:#9a7a2a; margin-top:2px; letter-spacing:1px; }
+		.esp-status{ margin-top:8px; padding:7px 10px; border-radius:6px; border:1px solid #1e2a3a; background:#080a10; font-family:'Orbitron',sans-serif; font-size:13px; letter-spacing:1px; color:var(--text-dim); text-align:center; min-height:30px; display:flex; align-items:center; justify-content:center; transition:all .3s; }
+		.esp-preview-list{ margin-top:10px; font-size:13px; color:var(--text-dim); letter-spacing:1px; line-height:1.8; }
+		.esp-preview-item{ display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #1a2a3a; }
+		.esp-preview-item:last-child{ border-bottom:none; }
+		.esp-preview-value{ color:var(--gold-light); font-family:'Orbitron',sans-serif; }
+
+		.contactor-status-badge{
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:10px;
+			padding:10px 14px;
+			border-radius:8px;
+			border:1px solid #2a3a4a;
+			background:#0a0e18;
+			transition:all .3s;
+			margin-bottom:14px;
+		}
+		.contactor-status-badge.off{
+			border-color:#8B0000 !important;
+			background:#100505 !important;
+			box-shadow:0 0 10px rgba(204,0,0,.2);
+		}
+		.contactor-status-badge.off .cont-indicator{
+			background:#cc0000 !important;
+			box-shadow:0 0 6px #cc0000 !important;
+		}
+		.contactor-status-badge.off .cont-label{ color:#cc0000 !important; }
+		.contactor-status-badge.on{
+			border-color:var(--green-ok) !important;
+			background:#071510 !important;
+			box-shadow:0 0 10px rgba(0,230,118,.2);
+		}
+		.contactor-status-badge.on .cont-indicator{
+			background:var(--green-ok) !important;
+			box-shadow:0 0 6px var(--green-ok) !important;
+			animation:blink .9s infinite;
+		}
+		.contactor-status-badge.on .cont-label{ color:var(--green-ok) !important; }
+		.cont-indicator{ width:14px; height:14px; border-radius:50%; transition:all .3s; flex-shrink:0; }
+		.cont-label{ font-family:'Orbitron',sans-serif; font-size:15px; letter-spacing:3px; color:var(--text-dim); transition:color .3s; }
+		.cont-timer{ font-family:'Orbitron',sans-serif; font-size:15px; color:var(--text-dim); margin-left:auto; letter-spacing:1px; min-width:50px; text-align:right; }
+
+		.push-btn{
+			width:100%;
+			padding:11px 8px;
+			border-radius:8px;
+			border:1px solid var(--gold-dark);
+			background:linear-gradient(180deg,#1a1200 0%,#0a0800 100%);
+			color:var(--gold);
+			font-family:'Orbitron',sans-serif;
+			font-size:15px;
+			letter-spacing:3px;
+			cursor:pointer;
+			transition:all .2s;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:8px;
+			position:relative;
+			overflow:hidden;
+			margin-bottom:10px;
+		}
+		.push-btn:hover{
+			border-color:var(--gold-light);
+			box-shadow:0 0 16px rgba(255,215,0,.3);
+			color:var(--gold-light);
+		}
+		.push-btn:active{ transform:scale(.97); }
+		.push-btn.firing{ animation:push-flash .5s ease; }
+		.push-btn:disabled{ opacity:.5; cursor:not-allowed; }
+		@keyframes push-flash{
+			0%{box-shadow:0 0 0 rgba(255,215,0,0)}
+			30%{box-shadow:0 0 28px rgba(255,215,0,.5),inset 0 0 16px rgba(255,215,0,.15)}
+			100%{box-shadow:0 0 0 rgba(255,215,0,0)}
+		}
+		.push-status-box{
+			display:flex;
+			align-items:center;
+			gap:8px;
+			padding:7px 10px;
+			border-radius:6px;
+			border:1px solid #1e2a3a;
+			background:#080a10;
+			font-family:'Orbitron',sans-serif;
+			font-size:13px;
+			letter-spacing:1px;
+			color:var(--text-dim);
+			min-height:34px;
+			transition:all .3s;
+		}
+		.push-status-box.sending{ border-color:var(--gold-dark); color:var(--gold); }
+		.push-status-box.success{ border-color:var(--green-ok); color:var(--green-ok); }
+		.push-status-dot{ width:7px;height:7px; border-radius:50%; background:#333; flex-shrink:0; transition:all .3s; }
+		.push-status-box.sending .push-status-dot{ background:var(--gold); box-shadow:0 0 5px var(--gold); animation:blink .5s infinite; }
+		.push-status-box.success .push-status-dot{ background:var(--green-ok); box-shadow:0 0 5px var(--green-ok); animation:blink .9s infinite; }
+
+		.switch-status-box{
+			margin-top:8px;
+			padding:8px 12px;
+			border-radius:6px;
+			border:1px solid #1e2a3a;
+			background:#080a10;
+			font-family:'Orbitron',sans-serif;
+			font-size:12px;
+			letter-spacing:1px;
+			color:var(--text-dim);
+			min-height:32px;
+			display:flex;
+			align-items:center;
+			gap:8px;
+			transition:all .3s;
+		}
+		.switch-status-box.active{ border-color:var(--gold-dark); color:var(--gold); }
+		.switch-status-box.done{ border-color:var(--green-ok); color:var(--green-ok); }
+		.switch-status-box.warn{ border-color:var(--orange-fault); color:var(--orange-fault); }
+
+		.restart-btn-gold{
+			border-color:var(--gold-dark) !important;
+			background:linear-gradient(180deg,#1a1200 0%,#0a0800 100%) !important;
+			color:var(--gold) !important;
+		}
+		.restart-btn-gold:hover{
+			border-color:var(--gold-light) !important;
+			box-shadow:0 0 14px rgba(255,215,0,.3) !important;
+			color:var(--gold-light) !important;
+		}
+		@keyframes restart-gold-flash{
+			0%{box-shadow:0 0 0 rgba(255,215,0,0)}
+			30%{box-shadow:0 0 30px rgba(255,215,0,.5),inset 0 0 20px rgba(255,215,0,.15)}
+			100%{box-shadow:0 0 0 rgba(255,215,0,0)}
+		}
+		.restart-btn-gold.firing{ animation:restart-gold-flash .6s ease !important; }
+
+		.contactor-pair{
+			display:grid;
+			grid-template-columns:1fr 1fr;
+			gap:10px;
+			margin-bottom:14px;
+		}
+		.cont-pair-box{
+			padding:10px 8px;
+			border-radius:8px;
+			border:1px solid #2a3a4a;
+			background:#0a0e18;
+			text-align:center;
+			transition:all .3s;
+		}
+		.cont-pair-box.on{
+			border-color:var(--green-ok);
+			background:#071510;
+			box-shadow:0 0 10px rgba(0,230,118,.15);
+		}
+		.cont-pair-box.off{
+			border-color:#8B0000;
+			background:#100505;
+			box-shadow:0 0 8px rgba(204,0,0,.15);
+		}
+		.cont-pair-title{
+			font-family:'Orbitron',sans-serif;
+			font-size:11px;
+			letter-spacing:2px;
+			color:var(--text-dim);
+			margin-bottom:6px;
+			text-transform:uppercase;
+		}
+		.cont-pair-dot{
+			width:18px; height:18px;
+			border-radius:50%;
+			background:#333;
+			margin:0 auto 4px;
+			transition:all .3s;
+		}
+		.cont-pair-box.on .cont-pair-dot{
+			background:var(--green-ok);
+			box-shadow:0 0 8px var(--green-ok);
+			animation:blink .9s infinite;
+		}
+		.cont-pair-box.off .cont-pair-dot{
+			background:#cc0000;
+			box-shadow:0 0 8px #cc0000;
+		}
+		.cont-pair-state{
+			font-family:'Orbitron',sans-serif;
+			font-size:14px;
+			font-weight:700;
+			letter-spacing:2px;
+		}
+		.cont-pair-box.on .cont-pair-state{ color:var(--green-ok); }
+		.cont-pair-box.off .cont-pair-state{ color:#cc0000; }
+
+		.m1-toggle-card{
+			background:#0a0e18;
+			border:1px solid #1e2a3a;
+			border-radius:10px;
+			padding:12px 10px;
+			text-align:center;
+			position:relative;
+			transition:border-color .2s, box-shadow .2s;
+		}
+		.m1-toggle-card:hover{
+			border-color:var(--gold-dark);
+			box-shadow:0 0 10px rgba(255,215,0,.08);
+		}
+		.m1-toggle-label{
+			font-family:'Orbitron',sans-serif;
+			font-size:10px;
+			letter-spacing:2px;
+			color:var(--gold-dark);
+			text-transform:uppercase;
+			margin-bottom:10px;
+		}
+		.m1-toggle-unit{
+			font-size:11px;
+			color:var(--text-dim);
+			letter-spacing:1px;
+			margin-top:6px;
+		}
+
+		/* Login & Overlay specific styles from index.html */
+		#login-overlay{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 30%,#0a1218 0%,#000 80%);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;color:#c0ccd8}
+		#login-card{width:340px;max-width:90vw;padding:28px 26px;border:1px solid rgba(255,215,0,.25);border-radius:14px;background:linear-gradient(180deg,rgba(20,28,36,.95),rgba(8,12,16,.95));box-shadow:0 0 40px rgba(255,215,0,.08),inset 0 0 30px rgba(0,212,255,.04)}
+		#login-card h2{font-family:'Orbitron',sans-serif;font-size:18px;letter-spacing:3px;color:#FFD700;margin:0 0 4px;text-align:center;text-shadow:0 0 14px rgba(255,215,0,.4)}
+		#login-card .sub{font-size:11px;letter-spacing:2px;color:rgba(192,204,216,.55);text-align:center;margin-bottom:20px;text-transform:uppercase}
+		#login-card label{display:block;font-size:11px;letter-spacing:2px;color:rgba(192,204,216,.7);margin:10px 0 6px;text-transform:uppercase}
+		#login-card input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(0,212,255,.25);background:rgba(0,0,0,.55);color:#e6f0fa;font-family:'Rajdhani',sans-serif;font-size:14px;letter-spacing:1px;outline:none;box-sizing:border-box}
+		#login-card input:focus{border-color:#FFD700;box-shadow:0 0 12px rgba(255,215,0,.25)}
+		#login-card button{width:100%;margin-top:18px;padding:11px;border-radius:8px;border:1px solid rgba(255,215,0,.5);background:linear-gradient(180deg,#FFD700,#b88a00);color:#0a0a0a;font-family:'Orbitron',sans-serif;font-weight:900;letter-spacing:3px;font-size:13px;cursor:pointer;transition:.2s}
+		#login-card button:hover{box-shadow:0 0 18px rgba(255,215,0,.6);transform:translateY(-1px)}
+		#login-card button:disabled{opacity:.5;cursor:not-allowed}
+		#login-msg{font-size:12px;letter-spacing:1px;color:#FF5252;text-align:center;margin-top:10px;min-height:16px}
+		#fb-conn-pill{position:fixed;top:8px;right:10px;z-index:9000;font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;padding:5px 10px;border-radius:999px;border:1px solid rgba(0,212,255,.35);background:rgba(0,0,0,.55);color:#00d4ff;display:flex;align-items:center;gap:6px;backdrop-filter:blur(6px)}
+		#fb-conn-pill .dot{width:7px;height:7px;border-radius:50%;background:#666;box-shadow:0 0 6px #666}
+		#fb-conn-pill.up .dot{background:#00e676;box-shadow:0 0 8px #00e676}
+		#fb-conn-pill.up{color:#00e676;border-color:rgba(0,230,118,.4)}
+		#fb-conn-pill.down{color:#FF5252;border-color:rgba(255,82,82,.4)}
+		#fb-conn-pill.down .dot{background:#FF5252;box-shadow:0 0 8px #FF5252}
+		#logout-btn{margin-left:8px;background:transparent;border:1px solid rgba(255,82,82,.4);color:#FF5252;font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:6px;cursor:pointer}
+		#logout-btn:hover{background:rgba(255,82,82,.1)}
+	</style>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+	
+	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div id="login-overlay" data-testid="login-overlay">
+	<div id="login-card">
+		<h2>PROTECTOR ACCESS</h2>
+		<div class="sub">monk-miner · authorized only</div>
+		<label for="login-email">Email</label>
+		<input id="login-email" type="email" autocomplete="username" data-testid="login-email" placeholder="anilji@gmail.com" />
+		<label for="login-password">Password</label>
+		<input id="login-password" type="password" autocomplete="current-password" data-testid="login-password" placeholder="••••••••" />
+		<button id="login-btn" data-testid="login-submit">SIGN IN</button>
+		<div id="login-msg" data-testid="login-msg"></div>
+	</div>
+</div>
+
+<div id="fb-conn-pill" class="down" data-testid="fb-conn-pill">
+	<span class="dot"></span>
+	<span id="fb-conn-text">FIREBASE • OFFLINE</span>
+	<span id="fb-user-text" style="opacity:.7;"></span>
+	<button id="logout-btn" data-testid="logout-btn" style="display:none;">LOGOUT</button>
+</div>
+
+<div class="dashboard">
+	<div class="header">
+		<div class="header-title">
+			<span class="title-gold">MONK MINER</span>
+			<span class="title-red">✕</span>
+			<span class="title-gold">HYDRO PROTECTOR</span>
+		</div>
+		<div class="header-sub"><i class="ti ti-brand-whatsapp" style="color:#25D366;"></i> +91 7678317589  |  <span class="live-dot"></span> LIVE</div>
+	</div>
+	<div class="main-grid">
+
+		<div class="panel">
+			<div class="corner-deco corner-tl"></div><div class="corner-deco corner-tr"></div>
+			<div class="corner-deco corner-bl"></div><div class="corner-deco corner-br"></div>
+			<div class="panel-title"><i class="ti ti-gauge"></i> Pressure Sensor</div>
+			<div class="three-circles">
+				<div class="circle-container">
+					<div class="esp-mode-ring" id="pressure-ring-wrap" style="width:140px;height:140px;">
+						<svg class="ring-svg" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<defs>
+								<radialGradient id="prsBgGrad" cx="40%" cy="35%" r="65%">
+									<stop id="prs-bg-stop" offset="0%" stop-color="#081808"/>
+									<stop offset="100%" stop-color="#080c14"/>
+								</radialGradient>
+								<filter id="prs-glow" x="-30%" y="-30%" width="160%" height="160%">
+									<feGaussianBlur stdDeviation="2.5" result="blur"/>
+									<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+								</filter>
+							</defs>
+							<circle cx="70" cy="70" r="62" fill="url(#prsBgGrad)"/>
+							<circle cx="70" cy="70" r="62" stroke="#1a2535" stroke-width="1" fill="none" opacity="0.6"/>
+							<circle cx="70" cy="70" r="54" stroke="#1a2535" stroke-width="7" fill="none"/>
+							<circle id="pressure-arc" cx="70" cy="70" r="54"
+								stroke="#00e676" stroke-width="7" fill="none"
+								stroke-dasharray="339" stroke-dashoffset="85"
+								stroke-linecap="round"
+								transform="rotate(-90 70 70)"
+								filter="url(#prs-glow)"/>
+							<g id="prs-ticks" opacity="0.3" stroke="#00e676" stroke-width="1.5" stroke-linecap="round">
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(0   70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(30  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(60  70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(90  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(120 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(150 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(180 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(210 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(240 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(270 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(300 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(330 70 70)"/>
+							</g>
+							<circle id="prs-arc-dot" cx="70" cy="16" r="4"
+								fill="#00e676" filter="url(#prs-glow)"
+								transform="rotate(90 70 70)"/>
+						</svg>
+						<div class="ring-inner" style="flex-direction:column;">
+							<div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,230,118,.8);line-height:1.5;" id="prs-live-txt">LIVE</div>
+							<div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,230,118,.8);line-height:1.5;" id="prs-live-txt2">PRESSURE</div>
+							<div style="font-family:'Orbitron',sans-serif;font-size:30px;font-weight:900;line-height:1;letter-spacing:-1px;transition:color .4s,text-shadow .4s;color:#00e676;text-shadow:0 0 18px rgba(0,230,118,.7);" id="pressure-val">--</div>
+							<div style="font-size:11px;color:var(--text-dim);letter-spacing:2px;margin-top:1px;">BAR</div>
+						</div>
+					</div>
+					<div class="pressure-label" style="margin-top:8px;"><span class="live-dot"></span>Live Feed</div>
+				</div>
+
+				<div class="circle-container">
+					<div class="esp-mode-ring m1" id="esp-mode-ring">
+						<svg class="ring-svg" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<defs>
+								<radialGradient id="espBgGrad" cx="40%" cy="35%" r="65%">
+									<stop id="esp-bg-stop" offset="0%" stop-color="#041820"/>
+									<stop offset="100%" stop-color="#080c14"/>
+								</radialGradient>
+								<filter id="arc-glow" x="-30%" y="-30%" width="160%" height="160%">
+									<feGaussianBlur stdDeviation="2.5" result="blur"/>
+									<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+								</filter>
+							</defs>
+							<circle cx="70" cy="70" r="62" fill="url(#espBgGrad)"/>
+							<circle cx="70" cy="70" r="62" stroke="#1a2535" stroke-width="1" fill="none" opacity="0.6"/>
+							<circle cx="70" cy="70" r="54" stroke="#1a2535" stroke-width="7" fill="none"/>
+							<circle id="esp-arc" cx="70" cy="70" r="54"
+								stroke="#00d4ff" stroke-width="7" fill="none"
+								stroke-dasharray="339" stroke-dashoffset="85"
+								stroke-linecap="round"
+								transform="rotate(-90 70 70)"
+								filter="url(#arc-glow)"/>
+							<g id="esp-ticks" opacity="0.3" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round">
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(0   70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(30  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(60  70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(90  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(120 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(150 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(180 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(210 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(240 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(270 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(300 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(330 70 70)"/>
+							</g>
+							<circle id="esp-arc-dot" cx="70" cy="16" r="4"
+								fill="#00d4ff" filter="url(#arc-glow)"
+								transform="rotate(90 70 70)"/>
+						</svg>
+						<div class="ring-inner">
+							<div class="esp-running-text">RUNNING IN</div>
+							<div class="esp-running-text">MODE</div>
+							<div class="esp-mode-num" id="esp-mode-num">1</div>
+						</div>
+					</div>
+					<div class="esp-uptime" id="esp-uptime-label">UPTIME: <span class="uptime-val" id="esp-uptime-val">00:00:00</span></div>
+				</div>
+
+				<div class="circle-container">
+					<div class="status-ring" id="status-ring">
+						<svg class="ring-svg" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<defs>
+								<radialGradient id="stsBgGrad" cx="40%" cy="35%" r="65%">
+									<stop id="sts-bg-stop" offset="0%" stop-color="#081808"/>
+									<stop offset="100%" stop-color="#080c14"/>
+								</radialGradient>
+								<filter id="sts-glow" x="-30%" y="-30%" width="160%" height="160%">
+									<feGaussianBlur stdDeviation="2.5" result="blur"/>
+									<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+								</filter>
+							</defs>
+							<circle cx="70" cy="70" r="62" fill="url(#stsBgGrad)"/>
+							<circle cx="70" cy="70" r="62" stroke="#1a2535" stroke-width="1" fill="none" opacity="0.6"/>
+							<circle cx="70" cy="70" r="54" stroke="#1a2535" stroke-width="7" fill="none"/>
+							<circle id="sts-arc" cx="70" cy="70" r="54"
+								stroke="#00e676" stroke-width="7" fill="none"
+								stroke-dasharray="339" stroke-dashoffset="0"
+								stroke-linecap="round"
+								transform="rotate(-90 70 70)"
+								filter="url(#sts-glow)"/>
+							<g id="sts-ticks" opacity="0.3" stroke="#00e676" stroke-width="1.5" stroke-linecap="round">
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(0   70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(30  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(60  70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(90  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(120 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(150 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(180 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(210 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(240 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(270 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(300 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(330 70 70)"/>
+							</g>
+							<circle id="sts-arc-dot" cx="70" cy="16" r="4"
+								fill="#00e676" filter="url(#sts-glow)"
+								transform="rotate(270 70 70)"/>
+						</svg>
+						<div class="ring-inner">
+							<div class="status-icon" id="status-icon">⚡</div>
+						</div>
+					</div>
+					<div class="esp-uptime" style="margin-top:8px;"><span class="uptime-val" id="status-sub">▲ 00:00</span></div>
+					<div class="pressure-label status-text" id="status-text" style="margin-top:4px">NORMAL</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel">
+			<div class="corner-deco corner-tl"></div><div class="corner-deco corner-tr"></div>
+			<div class="corner-deco corner-bl"></div><div class="corner-deco corner-br"></div>
+			<div class="panel-title"><i class="ti ti-cpu"></i> Operation Mode</div>
+			<div class="mode-btns">
+				<button class="mode-btn active" id="btn-m1" onclick="setMode(1)">
+					<span class="mode-num">1</span>MODE
+					<div class="mode-esp-badge">● ESP RUNNING</div>
+				</button>
+				<button class="mode-btn" id="btn-m2" onclick="setMode(2)">
+					<span class="mode-num">2</span>MODE
+					<div class="mode-esp-badge">● ESP RUNNING</div>
+				</button>
+			</div>
+			<div style="margin-top:8px;font-size:13px;color:var(--text-dim);letter-spacing:1px;" id="mode-desc">AUTO PRESSURE CONTROL — MIN/MAX THRESHOLDS</div>
+
+			<div id="switch-btn-wrap" style="display:none;margin-top:8px;">
+				<button id="switch-btn" style="width:100%;padding:11px 10px;border-radius:8px;
+					border:1px solid var(--gold-dark);background:linear-gradient(180deg,#1a1200,#0a0800);
+					color:var(--gold);font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:2px;
+					cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+					position:relative;overflow:hidden;user-select:none;"
+					onmousedown="startSwitchHold()" ontouchstart="startSwitchHold()"
+					onmouseup="cancelSwitchHold()" onmouseleave="cancelSwitchHold()"
+					ontouchend="cancelSwitchHold()" ontouchcancel="cancelSwitchHold()">
+					<i class="ti ti-switch-horizontal"></i>
+					<span id="switch-btn-text">SWITCH TO MODE —</span>
+					<span id="switch-hold-bar" style="position:absolute;left:0;bottom:0;height:3px;
+						width:0%;background:var(--gold-light);border-radius:0 0 8px 8px;pointer-events:none;"></span>
+				</button>
+				<div style="text-align:center;font-size:11px;color:var(--text-dim);letter-spacing:1px;margin-top:4px;" id="switch-hold-hint">HOLD 2 SEC TO SWITCH</div>
+			</div>
+
+			<div id="switch-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+				z-index:9999;align-items:center;justify-content:center;">
+				<div style="background:#0d1520;border:1px solid var(--gold-dark);border-radius:14px;
+					padding:24px 20px;max-width:300px;width:90%;text-align:center;
+					box-shadow:0 0 40px rgba(255,215,0,.15);">
+					<div style="font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;
+						color:var(--gold-dark);margin-bottom:10px;">⚠ CONFIRM SWITCH</div>
+					<div id="switch-confirm-msg" style="font-size:15px;color:#c0ccd8;letter-spacing:1px;
+						margin-bottom:20px;line-height:1.6;white-space:pre-line;"></div>
+					<div style="display:flex;gap:10px;">
+						<button onclick="cancelSwitch()" style="flex:1;padding:10px;border-radius:8px;
+							border:1px solid #2a3a4a;background:#0a0e18;color:var(--text-dim);
+							font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;cursor:pointer;">CANCEL</button>
+						<button onclick="confirmSwitch()" style="flex:1;padding:10px;border-radius:8px;
+							border:1px solid var(--gold-dark);background:linear-gradient(180deg,#1a1200,#0a0800);
+							color:var(--gold);font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;cursor:pointer;">CONFIRM</button>
+					</div>
+					<div id="switch-confirm-status" style="margin-top:12px;font-family:'Orbitron',sans-serif;
+						font-size:12px;letter-spacing:1px;color:var(--text-dim);min-height:18px;"></div>
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="panel panel-full" id="mode1-panel" style="display:none;">
+			<div class="corner-deco corner-tl"></div><div class="corner-deco corner-tr"></div>
+			<div class="corner-deco corner-bl"></div><div class="corner-deco corner-br"></div>
+			<div class="panel-title"><i class="ti ti-adjustments-horizontal"></i> MODE 1 CONTROL PANEL</div>
+
+			<div class="esp-status" id="mode1-running-status" style="margin-bottom:14px;">--</div>
+
+			<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;"><i class="ti ti-bolt"></i> Contactor Live Status</div>
+			<div class="contactor-pair">
+				<div class="cont-pair-box off" id="m2-cont1-box">
+					<div class="cont-pair-title">CONTACTOR 1</div>
+					<div class="cont-pair-dot" id="m2-cont1-dot"></div>
+					<div class="cont-pair-state" id="m2-cont1-state">OFF</div>
+				</div>
+				<div class="cont-pair-box off" id="m2-cont2-box">
+					<div class="cont-pair-title">CONTACTOR 2</div>
+					<div class="cont-pair-dot" id="m2-cont2-dot"></div>
+					<div class="cont-pair-state" id="m2-cont2-state">OFF</div>
+				</div>
+			</div>
+
+			<div class="section-divider" style="margin-bottom:14px;"></div>
+			<div class="section-divider"></div>
+			<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Min Pressure</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjVal2('min2',-1)">−</button>
+						<div class="val-display" id="min2-val-tog" style="width:52px;">20</div>
+						<button class="val-btn" onclick="adjVal2('min2',1)">+</button>
+					</div>
+					<div class="m1-toggle-unit">BAR (0–100)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Max Pressure</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjVal2('max2',-1)">−</button>
+						<div class="val-display" id="max2-val-tog" style="width:52px;">80</div>
+						<button class="val-btn" onclick="adjVal2('max2',1)">+</button>
+					</div>
+					<div class="m1-toggle-unit">BAR (0–100)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Contactor ON Pulse</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming2('m2-pulse-on',-1,0,59)">−</button>
+						<div class="val-display" id="m2-pulse-on" style="width:52px;">3</div>
+						<button class="val-btn" onclick="adjTiming2('m2-pulse-on',1,0,59)">+</button>
+					</div>
+					<div class="m1-toggle-unit">SEC (0–59)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Contactor OFF Pulse</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming2('m2-pulse-off',-1,0,59)">−</button>
+						<div class="val-display" id="m2-pulse-off" style="width:52px;">3</div>
+						<button class="val-btn" onclick="adjTiming2('m2-pulse-off',1,0,59)">+</button>
+					</div>
+					<div class="m1-toggle-unit">SEC (0–59)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Restart Cycle Time</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming2('m2-restart-time',-1,1,999)">−</button>
+						<div class="val-display" id="m2-restart-time" style="width:52px;">10</div>
+						<button class="val-btn" onclick="adjTiming2('m2-restart-time',1,1,999)">+</button>
+					</div>
+					<div class="m1-toggle-unit">SEC (1–999)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Outrange Restart Time</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming2('m2-outrange-restart',-1,0,999)">−</button>
+						<div class="val-display" id="m2-outrange-restart" style="width:52px;">30</div>
+						<button class="val-btn" onclick="adjTiming2('m2-outrange-restart',1,0,999)">+</button>
+					</div>
+					<div class="m1-toggle-unit">SEC (0–999)</div>
+				</div>
+			</div>
+			<div class="section-divider"></div>
+			<div class="esp-sync-grid">
+				<div class="esp-card update">
+					<button id="esp-update-btn-m2" onclick="espUpdateValues('m2')" class="esp-btn update"><i class="ti ti-upload"></i> UPDATE TO PROTECTOR KIT</button>
+					<div id="esp-update-status-m2" class="esp-status">READY</div>
+					<div class="esp-data-grid">
+						<div class="esp-data-row row-2">
+							<div class="upd-data-box"><div class="upd-data-label">Min Pressure</div><div id="upd-min-val-m2" class="upd-data-value">20</div><div class="upd-data-unit">BAR</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">Max Pressure</div><div id="upd-max-val-m2" class="upd-data-value">80</div><div class="upd-data-unit">BAR</div></div>
+						</div>
+						<div class="esp-data-row row-2">
+							<div class="upd-data-box"><div class="upd-data-label">ON Pulse</div><div id="upd-on-val-m2" class="upd-data-value">3</div><div class="upd-data-unit">sec</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">OFF Pulse</div><div id="upd-off-val-m2" class="upd-data-value">3</div><div class="upd-data-unit">sec</div></div>
+						</div>
+						<div class="esp-data-row row-2">
+							<div class="upd-data-box"><div class="upd-data-label">Restart</div><div id="upd-restart-val-m2" class="upd-data-value">10</div><div class="upd-data-unit">sec</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">Outrange Restart</div><div id="upd-outrange-restart-m2" class="upd-data-value">30</div><div class="upd-data-unit">sec</div></div>
+						</div>
+					</div>
+				</div>
+				<div class="esp-card fetch">
+					<button id="esp-fetch-btn-m2" onclick="espFetchValues('m2')" class="esp-btn fetch"><i class="ti ti-download"></i> FETCH VALUES FROM PROTECTOR KIT</button>
+					<div id="esp-fetch-status-m2" class="esp-status">READY</div>
+					<div class="esp-data-grid">
+						<div class="esp-data-row row-2">
+							<div class="esp-data-box"><div class="esp-data-label">Min Pressure</div><div id="fetched-min-m2" class="esp-data-value">--</div><div class="esp-data-unit">BAR</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">Max Pressure</div><div id="fetched-max-m2" class="esp-data-value">--</div><div class="esp-data-unit">BAR</div></div>
+						</div>
+						<div class="esp-data-row row-2">
+							<div class="esp-data-box"><div class="esp-data-label">ON Pulse</div><div id="fetched-on-pulse-m2" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">OFF Pulse</div><div id="fetched-off-pulse-m2" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+						</div>
+						<div class="esp-data-row row-2">
+							<div class="esp-data-box"><div class="esp-data-label">Restart</div><div id="fetched-restart-m2" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">Outrange Restart</div><div id="fetched-outrange-restart-m2" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="section-divider" style="margin-top:14px;"></div>
+			<button class="restart-btn" id="restart-btn-m2-real" onclick="restartESP(2)"><i class="ti ti-refresh" style="font-size:16px;"></i> RESTART MODE 1 SCRIPT</button>
+			<div style="font-size:13px;color:var(--text-dim);text-align:center;margin-top:5px;letter-spacing:1px;" id="restart-status-m2">STANDBY — READY TO RESTART</div>
+		</div>
+
+		<div class="panel panel-full" id="mode2-panel" style="display:none;">
+			<div class="corner-deco corner-tl"></div><div class="corner-deco corner-tr"></div>
+			<div class="corner-deco corner-bl"></div><div class="corner-deco corner-br"></div>
+			<div class="panel-title"><i class="ti ti-circuit-switchboard"></i> Mode 2 — Relay Manual + Contactor Timers</div>
+
+			<div class="esp-status" id="mode2-running-status" style="margin-bottom:14px;">--</div>
+
+			<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;"><i class="ti ti-bolt"></i> Contactor Live Status</div>
+			<div class="contactor-pair">
+				<div class="cont-pair-box off" id="m3-cont1-box">
+					<div class="cont-pair-title">CONTACTOR 1</div>
+					<div class="cont-pair-dot" id="m3-cont1-dot"></div>
+					<div class="cont-pair-state" id="m3-cont1-state">OFF</div>
+				</div>
+				<div class="cont-pair-box off" id="m3-cont2-box">
+					<div class="cont-pair-title">CONTACTOR 2</div>
+					<div class="cont-pair-dot" id="m3-cont2-dot"></div>
+					<div class="cont-pair-state" id="m3-cont2-state">OFF</div>
+				</div>
+			</div>
+
+			<div class="section-divider" style="margin-bottom:14px;"></div>
+			<div class="relay-push-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
+				<div class="contactor-card">
+					<div style="font-size:13px;color:var(--gold-dark);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;font-family:'Orbitron',sans-serif;">⚡ Relay 1 Push</div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;">ON Duration</div>
+					<div class="value-selector" style="justify-content:center;margin-bottom:14px;">
+						<button class="val-btn" onclick="adjPushTime('p1',-1)">−</button>
+						<div class="val-display" id="p1-time" style="width:42px;">5</div>
+						<button class="val-btn" onclick="adjPushTime('p1',1)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:-8px;margin-bottom:14px;">SEC (1–999)</div>
+					<button class="push-btn" id="push-btn-r1" onclick="pushRelay(1)">
+						<i class="ti ti-player-play" style="font-size:14px;"></i> PUSH
+					</button>
+					<div class="push-status-box" id="push-status-r1">
+						<span class="push-status-dot" id="push-dot-r1"></span>
+						<span id="push-status-text-r1">STANDBY — READY</span>
+					</div>
+				</div>
+				<div class="contactor-card">
+					<div style="font-size:13px;color:var(--gold-dark);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;font-family:'Orbitron',sans-serif;">⚡ Relay 2 Push</div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;">ON Duration</div>
+					<div class="value-selector" style="justify-content:center;margin-bottom:14px;">
+						<button class="val-btn" onclick="adjPushTime('p2',-1)">−</button>
+						<div class="val-display" id="p2-time" style="width:42px;">5</div>
+						<button class="val-btn" onclick="adjPushTime('p2',1)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:-8px;margin-bottom:14px;">SEC (1–999)</div>
+					<button class="push-btn" id="push-btn-r2" onclick="pushRelay(2)">
+						<i class="ti ti-player-play" style="font-size:14px;"></i> PUSH
+					</button>
+					<div class="push-status-box" id="push-status-r2">
+						<span class="push-status-dot" id="push-dot-r2"></span>
+						<span id="push-status-text-r2">STANDBY — READY</span>
+					</div>
+				</div>
+			</div>
+			<div class="section-divider"></div>
+			<div class="relay-row relay-off" id="relay1-row">
+				<div class="relay-name"><span class="relay-timer" id="relay1-timer"><span class="watch">⏱</span><span class="sec">10</span>s</span><div class="relay-dot" id="relay1-dot"></div> <span style="color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(255,215,0,.6);">RELAY 1</span></div>
+				<div class="toggle-wrap"><span class="relay-state-txt" id="relay1-state">OFF</span><label class="toggle"><input type="checkbox" id="relay1-toggle" onchange="toggleRelay(1)"><span class="toggle-slider"></span></label></div>
+			</div>
+			<div class="relay-row relay-off" id="relay2-row">
+				<div class="relay-name"><span class="relay-timer" id="relay2-timer"><span class="watch">⏱</span><span class="sec">10</span>s</span><div class="relay-dot" id="relay2-dot"></div> <span style="color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(255,215,0,.6);">RELAY 2</span></div>
+				<div class="toggle-wrap"><span class="relay-state-txt" id="relay2-state">OFF</span><label class="toggle"><input type="checkbox" id="relay2-toggle" onchange="toggleRelay(2)"><span class="toggle-slider"></span></label></div>
+			</div>
+			<div class="relay-row relay-off" id="relay3-row">
+				<div class="relay-name"><span class="relay-timer" id="relay3-timer"><span class="watch">⏱</span><span class="sec">10</span>s</span><div class="relay-dot" id="relay3-dot"></div> <span style="color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(255,215,0,.6);">RELAY 3</span></div>
+				<div class="toggle-wrap"><span class="relay-state-txt" id="relay3-state">OFF</span><label class="toggle"><input type="checkbox" id="relay3-toggle" onchange="toggleRelay(3)"><span class="toggle-slider"></span></label></div>
+			</div>
+			<div class="relay-row relay-off" id="relay4-row">
+				<div class="relay-name"><span class="relay-timer" id="relay4-timer"><span class="watch">⏱</span><span class="sec">10</span>s</span><div class="relay-dot" id="relay4-dot"></div> <span style="color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(255,215,0,.6);">RELAY 4</span></div>
+				<div class="toggle-wrap"><span class="relay-state-txt" id="relay4-state">OFF</span><label class="toggle"><input type="checkbox" id="relay4-toggle" onchange="toggleRelay(4)"><span class="toggle-slider"></span></label></div>
+			</div>
+			<div class="section-divider" style="margin-top:14px;"></div>
+			<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;"><i class="ti ti-adjustments-horizontal"></i> Control Values</div>
+			<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Min Pressure</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjVal3('min3',-1)">−</button>
+						<div class="val-display" id="min3-val-tog" style="width:52px;">20</div>
+						<button class="val-btn" onclick="adjVal3('min3',1)">+</button>
+					</div>
+					<div class="m1-toggle-unit">BAR (0–100)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Max Pressure</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjVal3('max3',-1)">−</button>
+						<div class="val-display" id="max3-val-tog" style="width:52px;">80</div>
+						<button class="val-btn" onclick="adjVal3('max3',1)">+</button>
+					</div>
+					<div class="m1-toggle-unit">BAR (0–100)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Contactor ON Pulse</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming3('m3-pulse-on',-1,0,59)">−</button>
+						<div class="val-display" id="m3-pulse-on" style="width:52px;">3</div>
+						<button class="val-btn" onclick="adjTiming3('m3-pulse-on',1,0,59)">+</button>
+					</div>
+					<div class="m1-toggle-unit">SEC (0–59)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Contactor OFF Pulse</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming3('m3-pulse-off',-1,0,59)">−</button>
+						<div class="val-display" id="m3-pulse-off" style="width:52px;">3</div>
+						<button class="val-btn" onclick="adjTiming3('m3-pulse-off',1,0,59)">+</button>
+					</div>
+					<div class="m1-toggle-unit">SEC (0–59)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Restart Cycle Time</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming3('m3-restart-time',-1,1,999)">−</button>
+						<div class="val-display" id="m3-restart-time" style="width:52px;">10</div>
+						<button class="val-btn" onclick="adjTiming3('m3-restart-time',1,1,999)">+</button>
+					</div>
+					<div class="m1-toggle-unit">SEC (1–999)</div>
+				</div>
+				<div class="m1-toggle-card">
+					<div class="m1-toggle-label">Outrange Restart Time</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming3('m3-outrange-restart',-1,0,999)">−</button>
+						<div class="val-display" id="m3-outrange-restart" style="width:52px;">30</div>
+						<button class="val-btn" onclick="adjTiming3('m3-outrange-restart',1,0,999)">+</button>
+					</div>
+					<div class="m1-toggle-unit">SEC (0–999)</div>
+				</div>
+			</div>
+			<div class="section-divider"></div>
+			<div class="esp-sync-grid">
+				<div class="esp-card update">
+					<button id="esp-update-btn-m3" onclick="espUpdateValues('m3')" class="esp-btn update"><i class="ti ti-upload"></i> UPDATE TO PROTECTOR KIT</button>
+					<div id="esp-update-status-m3" class="esp-status">READY</div>
+					<div class="esp-data-grid">
+						<div class="esp-data-row row-2">
+							<div class="upd-data-box"><div class="upd-data-label">Min Pressure</div><div id="upd-min-val-m3" class="upd-data-value">20</div><div class="upd-data-unit">BAR</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">Max Pressure</div><div id="upd-max-val-m3" class="upd-data-value">80</div><div class="upd-data-unit">BAR</div></div>
+						</div>
+						<div class="esp-data-row row-2">
+							<div class="upd-data-box"><div class="upd-data-label">ON Pulse</div><div id="upd-on-val-m3" class="upd-data-value">3</div><div class="upd-data-unit">sec</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">OFF Pulse</div><div id="upd-off-val-m3" class="upd-data-value">3</div><div class="upd-data-unit">sec</div></div>
+						</div>
+						<div class="esp-data-row row-2">
+							<div class="upd-data-box"><div class="upd-data-label">Restart</div><div id="upd-restart-val-m3" class="upd-data-value">10</div><div class="upd-data-unit">sec</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">Outrange Restart</div><div id="upd-outrange-restart-m3" class="upd-data-value">30</div><div class="upd-data-unit">sec</div></div>
+						</div>
+					</div>
+				</div>
+				<div class="esp-card fetch">
+					<button id="esp-fetch-btn-m3" onclick="espFetchValues('m3')" class="esp-btn fetch"><i class="ti ti-download"></i> FETCH VALUES FROM PROTECTOR KIT</button>
+					<div id="esp-fetch-status-m3" class="esp-status">READY</div>
+					<div class="esp-data-grid">
+						<div class="esp-data-row row-2">
+							<div class="esp-data-box"><div class="esp-data-label">Min Pressure</div><div id="fetched-min-m3" class="esp-data-value">--</div><div class="esp-data-unit">BAR</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">Max Pressure</div><div id="fetched-max-m3" class="esp-data-value">--</div><div class="esp-data-unit">BAR</div></div>
+						</div>
+						<div class="esp-data-row row-2">
+							<div class="esp-data-box"><div class="esp-data-label">ON Pulse</div><div id="fetched-on-pulse-m3" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">OFF Pulse</div><div id="fetched-off-pulse-m3" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+						</div>
+						<div class="esp-data-row row-2">
+							<div class="esp-data-box"><div class="esp-data-label">Restart</div><div id="fetched-restart-m3" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">Outrange Restart</div><div id="fetched-outrange-restart-m3" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="section-divider" style="margin-top:14px;"></div>
+			<button class="restart-btn" id="restart-btn-m3" onclick="restartESP(3)"><i class="ti ti-refresh" style="font-size:16px;"></i> RESTART MODE 2 SCRIPT</button>
+			<div style="font-size:13px;color:var(--text-dim);text-align:center;margin-top:5px;letter-spacing:1px;" id="restart-status-m3">STANDBY — READY TO RESTART</div>
+		</div>
+	</div>
+	<div class="footer-bar">
+		<div class="footer-text">MONK MINER × HYDRO PROTECTOR  |  ALL RIGHTS RESERVED</div>
+		<div class="footer-live"><span class="live-dot"></span> LIVE</div>
+	</div>
+</div>
+
+<script>
+let currentMode = 1;
+let espMode = 1;
+var pressureVal = 5;
+var pressureIsLive = false;
+
+// Initialize using the 0-100 logic correctly
+let minPressure = 20, maxPressure = 80;
+let minPressure2 = 20, maxPressure2 = 80;
+let minPressure3 = 20, maxPressure3 = 80;
+
+let relayStates = {1: false, 2: false, 3: false, 4: false};
+let relayTimers = {1: 0, 2: 0, 3: 0, 4: 0};
+let pushTimes = {p1: 5, p2: 5};
+let pushBusy = {1: false, 2: false};
+let switchBusy = false;
+let uptimeSeconds = 0;
+let contactorState = { 1: false, 2: false };
+
+let normalSeconds = 0;
+let wasNormal = true;
+
+const PRESSURE_MIN = 0, PRESSURE_MAX = 100;
+
+function sanitizePressure(raw) {
+	const n = Number(raw);
+	if (raw === null || raw === undefined || !Number.isFinite(n)) return 0;
+	if (n < PRESSURE_MIN || n > PRESSURE_MAX) return 0;
+	return n;
+}
+
+setInterval(() => {
+	uptimeSeconds++;
+	const h = String(Math.floor(uptimeSeconds / 3600)).padStart(2,'0');
+	const m = String(Math.floor((uptimeSeconds % 3600) / 60)).padStart(2,'0');
+	const s = String(uptimeSeconds % 60).padStart(2,'0');
+	document.getElementById('esp-uptime-val').textContent = h + ':' + m + ':' + s;
+}, 1000);
+
+const MODE_COLORS = {
+	1: { normal:'#FFD700', normalBg:'#1a1200', fault:'#FF2020', faultBg:'#1a0404' },
+	2: { normal:'#FFD700', normalBg:'#1a1200', fault:'#FF2020', faultBg:'#1a0404' },
+	3: { normal:'#FFD700', normalBg:'#1a1200', fault:'#FF2020', faultBg:'#1a0404' },
+};
+
+function updateEspModeRing(mode) {
+	espMode = mode;
+	const ring   = document.getElementById('esp-mode-ring');
+	const num    = document.getElementById('esp-mode-num');
+	const arc    = document.getElementById('esp-arc');
+	const dot    = document.getElementById('esp-arc-dot');
+	const ticks  = document.getElementById('esp-ticks');
+	const bgStop = document.getElementById('esp-bg-stop');
+
+	ring.className = 'esp-mode-ring m' + mode;
+	num.textContent = mode;
+
+	const mc = MODE_COLORS[mode];
+	const c = mc.normal;
+	const cfg = {
+		1: { bg: mc.normalBg, offset: 85,  dotRot: 90  },
+		2: { bg: mc.normalBg, offset: 0,   dotRot: 270 },
+		3: { bg: mc.normalBg, offset: 170, dotRot: 180 },
+	}[mode];
+
+	arc.setAttribute('stroke', c);
+	arc.setAttribute('stroke-dashoffset', cfg.offset);
+	dot.setAttribute('fill', c);
+	dot.setAttribute('transform', `rotate(${cfg.dotRot} 70 70)`);
+	ticks.setAttribute('stroke', c);
+	bgStop.setAttribute('stop-color', cfg.bg);
+
+	num.style.color = c;
+	num.style.textShadow = `0 0 18px ${c}bb, 0 0 40px ${c}44`;
+	document.querySelectorAll('.esp-running-text').forEach(el => el.style.color = c + 'cc');
+	ring.style.setProperty('--spark-color', c);
+
+	document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('esp-running'));
+	document.getElementById('btn-m' + mode).classList.add('esp-running');
+	refreshSwitchBtn();
+	updateRelayLock(mode);
+	updateModePanelStatus(mode);
+}
+
+// ============================================================
+// Live "ESP RUNNING IN MODE X" status box inside each control
+// panel. Fed by the /status/mode listener (only fires while the
+// ESP is online and actively writing) via updateEspModeRing().
+// Writes the running confirmation into whichever panel matches
+// the ESP's real reported mode, and a dim "not active" note
+// into the other one.
+// ============================================================
+function updateModePanelStatus(mode) {
+	const box1 = document.getElementById('mode1-running-status');
+	const box2 = document.getElementById('mode2-running-status');
+	if (box1) {
+		if (mode === 1) {
+			box1.textContent = '● ESP RUNNING IN MODE 1';
+			box1.style.color = 'var(--green-ok)';
+			box1.style.borderColor = 'var(--green-ok)';
+		} else {
+			box1.textContent = '○ ESP currently running in Mode ' + mode;
+			box1.style.color = 'var(--text-dim)';
+			box1.style.borderColor = '#1e2a3a';
+		}
+	}
+	if (box2) {
+		if (mode === 2) {
+			box2.textContent = '● ESP RUNNING IN MODE 2';
+			box2.style.color = 'var(--green-ok)';
+			box2.style.borderColor = 'var(--green-ok)';
+		} else {
+			box2.textContent = '○ ESP currently running in Mode ' + mode;
+			box2.style.color = 'var(--text-dim)';
+			box2.style.borderColor = '#1e2a3a';
+		}
+	}
+}
+
+function updateRelayLock(mode) {
+	const lockMode1 = (mode === 1);
+	for (let i = 1; i <= 4; i++) {
+		const row    = document.getElementById('relay' + i + '-row');
+		const toggle = document.getElementById('relay' + i + '-toggle');
+		const state  = document.getElementById('relay' + i + '-state');
+		const dot    = document.getElementById('relay' + i + '-dot');
+		if (!row) continue;
+		// In Mode 1, relays 1-3 are locked (used by auto pressure control).
+		// Relay 4 stays free to toggle manually in BOTH modes.
+		const locked = lockMode1 && i !== 4;
+		if (locked) {
+			toggle.disabled = true;
+			toggle.checked  = false;
+			row.classList.remove('relay-on');
+			row.classList.add('relay-off');
+			row.style.opacity = '0.38';
+			row.style.pointerEvents = 'none';
+			state.textContent = 'LOCKED';
+			state.style.color = '#444';
+			dot.style.background = '#2a2a2a';
+			dot.style.boxShadow  = 'none';
+			relayStates[i] = false;
+			relayTimers[i] = 0;
+		} else {
+			toggle.disabled = false;
+			row.style.opacity = '1';
+			row.style.pointerEvents = '';
+			state.style.color = '';
+			// Don't clobber state text here — live Firebase listener owns it.
+		}
+	}
+	for (let i = 1; i <= 2; i++) {
+		const pushBtn = document.getElementById('push-btn-r' + i);
+		const pushCard = pushBtn ? pushBtn.closest('.contactor-card') : null;
+		if (!pushBtn) continue;
+		if (lockMode1) {
+			pushBtn.disabled = true;
+			if (pushCard) { pushCard.style.opacity = '0.38'; pushCard.style.pointerEvents = 'none'; }
+		} else {
+			pushBtn.disabled = false;
+			if (pushCard) { pushCard.style.opacity = '1'; pushCard.style.pointerEvents = ''; }
+		}
+	}
+}
+
+function setMode(m) {
+	currentMode = m;
+	document.querySelectorAll('[id$="-panel"]').forEach(p => p.style.display = 'none');
+	document.getElementById('mode' + m + '-panel').style.display = 'block';
+	document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+	document.getElementById('btn-m' + m).classList.add('active');
+	const descs = [
+		'AUTO PRESSURE CONTROL — MIN/MAX THRESHOLDS',
+		'RELAY MANUAL + CONTACTOR TIMERS',
+		'RELAY MANUAL CONTROL — MONITORING OFF'
+	];
+	document.getElementById('mode-desc').textContent = descs[m - 1];
+	refreshSwitchBtn();
+}
+
+let switchHoldRaf = null, switchHoldStart = null;
+const SWITCH_HOLD_MS = 2000;
+
+function refreshSwitchBtn() {
+	const wrap = document.getElementById('switch-btn-wrap');
+	if (!wrap) return;
+	if (currentMode !== espMode) {
+		wrap.style.display = 'block';
+		document.getElementById('switch-btn-text').textContent = 'SWITCH TO MODE ' + currentMode;
+	} else {
+		wrap.style.display = 'none';
+		cancelSwitchHold();
+	}
+}
+
+function startSwitchHold() {
+	if (currentMode === espMode) return;
+	cancelSwitchHold();
+	switchHoldStart = Date.now();
+	const bar = document.getElementById('switch-hold-bar');
+	document.getElementById('switch-hold-hint').textContent = 'KEEP HOLDING…';
+	bar.style.transition = 'none'; bar.style.width = '0%';
+	(function tick() {
+		const pct = Math.min(100, ((Date.now()-switchHoldStart)/SWITCH_HOLD_MS)*100);
+		bar.style.width = pct + '%';
+		if (pct < 100) switchHoldRaf = requestAnimationFrame(tick);
+		else { bar.style.width='0%'; document.getElementById('switch-hold-hint').textContent='HOLD 2 SEC TO SWITCH'; showSwitchConfirm(); }
+	})();
+}
+
+function cancelSwitchHold() {
+	if (switchHoldRaf) { cancelAnimationFrame(switchHoldRaf); switchHoldRaf = null; }
+	const bar = document.getElementById('switch-hold-bar');
+	const hint = document.getElementById('switch-hold-hint');
+	if (bar) { bar.style.transition='none'; bar.style.width='0%'; }
+	if (hint) hint.textContent = 'HOLD 2 SEC TO SWITCH';
+	switchHoldStart = null;
+}
+
+function showSwitchConfirm() {
+	document.getElementById('switch-confirm-msg').textContent = 'Switch ESP from Mode '+espMode+' → Mode '+currentMode+'?\nESP will restart in the new mode.';
+	document.getElementById('switch-confirm-status').textContent = '';
+	document.getElementById('switch-confirm-overlay').style.display = 'flex';
+}
+
+function cancelSwitch() { document.getElementById('switch-confirm-overlay').style.display = 'none'; }
+
+function confirmSwitch() {
+    if (window.sendCmd) {
+        const s = document.getElementById('switch-confirm-status');
+        s.style.color='var(--gold)'; s.textContent='▶ SENDING COMMAND TO ESP…';
+        const target = currentMode;
+
+        const onDone = res => {
+            const ok = res && res.ok;
+            // IMPORTANT: `ok` here only means the X3/X17 command was
+            // successfully WRITTEN to Firebase — it does NOT mean the ESP
+            // has actually switched modes yet. The mode ring/UI must not
+            // change until the ESP itself confirms by writing the new
+            // value to /status/mode (handled entirely by the live
+            // subscribeStatus() listener → updateEspModeRing()). So we
+            // deliberately do NOT call updateEspModeRing(target) here —
+            // doing so would make the UI lie about the ESP's actual state
+            // if the command was lost, the ESP rejected it, or (for X17)
+            // the restart never completes.
+            s.style.color = ok ? 'var(--green-ok)' : '#FF5252';
+            s.textContent = ok
+                ? ('✔ COMMAND SENT — WAITING FOR ESP TO CONFIRM MODE ' + target + '…')
+                : ('✘ FAILED — ' + ((res && res.error) || 'unknown'));
+            setTimeout(() => {
+                const ov = document.getElementById('switch-confirm-overlay');
+                if (ov) ov.style.display = 'none';
+                // No manual ring update — espMode only ever changes via
+                // the /status/mode Firebase listener, i.e. once the ESP
+                // itself confirms it. If the ESP doesn't confirm (e.g.
+                // it's offline or the restart stalls), the ring correctly
+                // stays on whatever mode it last actually reported.
+            }, ok ? 1500 : 3500);
+        };
+
+        if (target === 2) {
+            window.sendCmd('X3').then(onDone);
+        } else if (target === 1) {
+            // X17 = atomic switch to Mode 1 (firmware T5):
+            // saves mode=1 to EEPROM, commits, then restarts. No
+            // race possible. Settings (min/max/etc.) are NOT touched
+            // here — user changes settings via the Update button.
+            window.sendCmd('X17').then(onDone);
+        } else {
+            onDone({ ok: false, error: 'invalid mode' });
+        }
+    }
+}
+
+// ===== LIVE SYNC: Mode 1 (suffix "2") <-> Mode 2 (suffix "3") control toggles =====
+// Both panels show the same 6 values (min/max pressure, on/off pulse, restart time,
+// outrange restart time) and the same update/fetch boxes. Any change in either panel
+// is mirrored instantly into the other so they always match.
+
+function adjVal2(type, delta) {
+	if (type === 'min2') {
+		minPressure2 = Math.max(0, Math.min(100, minPressure2 + delta));
+		minPressure3 = minPressure2;
+		document.getElementById('min2-val-tog').textContent = minPressure2;
+		document.getElementById('min3-val-tog').textContent = minPressure2;
+	} else {
+		maxPressure2 = Math.max(0, Math.min(100, maxPressure2 + delta));
+		maxPressure3 = maxPressure2;
+		document.getElementById('max2-val-tog').textContent = maxPressure2;
+		document.getElementById('max3-val-tog').textContent = maxPressure2;
+	}
+	refreshM2Preview();
+	refreshM3Preview();
+}
+
+function adjTiming2(id, delta, mn, mx) {
+	const el = document.getElementById(id);
+	let val = parseInt(el.textContent) || 0;
+	val = Math.max(mn, Math.min(mx, val + delta));
+	el.textContent = val;
+	mirrorTiming2to3(id, val);
+	refreshM2Preview();
+	refreshM3Preview();
+}
+
+function adjVal3(type, delta) {
+	if (type === 'min3') {
+		minPressure3 = Math.max(0, Math.min(100, minPressure3 + delta));
+		minPressure2 = minPressure3;
+		document.getElementById('min3-val-tog').textContent = minPressure3;
+		document.getElementById('min2-val-tog').textContent = minPressure3;
+	} else {
+		maxPressure3 = Math.max(0, Math.min(100, maxPressure3 + delta));
+		maxPressure2 = maxPressure3;
+		document.getElementById('max3-val-tog').textContent = maxPressure3;
+		document.getElementById('max2-val-tog').textContent = maxPressure3;
+	}
+	refreshM2Preview();
+	refreshM3Preview();
+}
+
+function adjTiming3(id, delta, mn, mx) {
+	const el = document.getElementById(id);
+	let val = parseInt(el.textContent) || 0;
+	val = Math.max(mn, Math.min(mx, val + delta));
+	el.textContent = val;
+	mirrorTiming3to2(id, val);
+	refreshM2Preview();
+	refreshM3Preview();
+}
+
+// Maps a Mode-1 ("m2-...") timing element id to its Mode-2 ("m3-...") twin and copies the value.
+function mirrorTiming2to3(id, val) {
+	const twinId = id.replace('m2-', 'm3-');
+	const twinEl = document.getElementById(twinId);
+	if (twinEl) twinEl.textContent = val;
+}
+
+// Maps a Mode-2 ("m3-...") timing element id to its Mode-1 ("m2-...") twin and copies the value.
+function mirrorTiming3to2(id, val) {
+	const twinId = id.replace('m3-', 'm2-');
+	const twinEl = document.getElementById(twinId);
+	if (twinEl) twinEl.textContent = val;
+}
+
+function refreshM2Preview() {
+	const onPulse = document.getElementById('m2-pulse-on').textContent;
+	const offPulse = document.getElementById('m2-pulse-off').textContent;
+	const restartTime = document.getElementById('m2-restart-time').textContent;
+	const outrangeRestart = document.getElementById('m2-outrange-restart').textContent;
+	document.getElementById('upd-min-val-m2').textContent = minPressure2;
+	document.getElementById('upd-max-val-m2').textContent = maxPressure2;
+	document.getElementById('upd-on-val-m2').textContent = onPulse;
+	document.getElementById('upd-off-val-m2').textContent = offPulse;
+	document.getElementById('upd-restart-val-m2').textContent = restartTime;
+	document.getElementById('upd-outrange-restart-m2').textContent = outrangeRestart;
+}
+
+function refreshM3Preview() {
+	const onPulse = document.getElementById('m3-pulse-on').textContent;
+	const offPulse = document.getElementById('m3-pulse-off').textContent;
+	const restartTime = document.getElementById('m3-restart-time').textContent;
+	const outrangeRestart = document.getElementById('m3-outrange-restart').textContent;
+	document.getElementById('upd-min-val-m3').textContent = minPressure3;
+	document.getElementById('upd-max-val-m3').textContent = maxPressure3;
+	document.getElementById('upd-on-val-m3').textContent = onPulse;
+	document.getElementById('upd-off-val-m3').textContent = offPulse;
+	document.getElementById('upd-restart-val-m3').textContent = restartTime;
+	document.getElementById('upd-outrange-restart-m3').textContent = outrangeRestart;
+}
+
+function applyCircleColors(normalColor, normalBg, faultColor, faultBg, isNormal, statusText, statusIcon) {
+	const mc = MODE_COLORS[espMode];
+	const activeColor = isNormal ? normalColor : faultColor;
+	const activeBg    = isNormal ? normalBg    : faultBg;
+
+	const pArc    = document.getElementById('pressure-arc');
+	const pDot    = document.getElementById('prs-arc-dot');
+	const pTicks  = document.getElementById('prs-ticks');
+	const pBgStop = document.getElementById('prs-bg-stop');
+	const pValEl  = document.getElementById('pressure-val');
+	const pLive1  = document.getElementById('prs-live-txt');
+	const pLive2  = document.getElementById('prs-live-txt2');
+	pArc.setAttribute('stroke', activeColor);
+	pDot.setAttribute('fill', activeColor);
+	pTicks.setAttribute('stroke', activeColor);
+	pBgStop.setAttribute('stop-color', activeBg);
+	pValEl.style.color = activeColor;
+	pValEl.style.textShadow = `0 0 18px ${activeColor}99, 0 0 40px ${activeColor}44`;
+	if (pLive1) { pLive1.style.color = activeColor + 'cc'; }
+	if (pLive2) { pLive2.style.color = activeColor + 'cc'; }
+	const pRing = document.getElementById('pressure-ring-wrap');
+	if (pRing) pRing.style.setProperty('--spark-color', activeColor);
+
+	const stsArc    = document.getElementById('sts-arc');
+	const stsDot    = document.getElementById('sts-arc-dot');
+	const stsTicks  = document.getElementById('sts-ticks');
+	const stsBgStop = document.getElementById('sts-bg-stop');
+	const stsTxt    = document.getElementById('status-text');
+	const stsIcon   = document.getElementById('status-icon');
+	stsArc.setAttribute('stroke', activeColor);
+	stsDot.setAttribute('fill', activeColor);
+	stsTicks.setAttribute('stroke', activeColor);
+	stsBgStop.setAttribute('stop-color', activeBg);
+	stsTxt.textContent = statusText;
+	stsTxt.style.color = activeColor;
+	stsTxt.style.textShadow = `0 0 18px ${activeColor}bb, 0 0 40px ${activeColor}44`;
+	if (stsIcon) {
+		stsIcon.textContent = statusIcon;
+		stsIcon.style.color = activeColor;
+		stsIcon.style.textShadow = `0 0 10px ${activeColor}e6, 0 0 22px ${activeColor}99`;
+	}
+	const stsRing = document.getElementById('status-ring');
+	if (stsRing) stsRing.style.setProperty('--spark-color', activeColor);
+
+	const subEl = document.getElementById('status-sub');
+	subEl.style.color = activeColor;
+}
+
+setInterval(() => {
+	const pValEl = document.getElementById('pressure-val');
+	pValEl.textContent = pressureIsLive ? pressureVal.toFixed(1) : '--';
+
+	const pct = Math.max(0, Math.min(100, pressureVal)) / 100;
+	const pOffset = 339 - pct * 339;
+	const pArc = document.getElementById('pressure-arc');
+	const pDot = document.getElementById('prs-arc-dot');
+	pArc.setAttribute('stroke-dashoffset', pOffset);
+	const pDotRot = pct * 360 - 90;
+	pDot.setAttribute('transform', `rotate(${pDotRot} 70 70)`);
+
+	const mc = MODE_COLORS[espMode];
+	// minPressure2/maxPressure2 is the single shared, live-synced min/max
+	// pair — kept current by the +/- toggles, by a successful ESP Update
+	// (X1 ack), by a successful ESP Fetch (X2 ack), and by the first
+	// /settings snapshot on login. The old `minPressure`/`maxPressure`
+	// (no suffix) pair below was a leftover that nothing in the file
+	// ever updates past its hardcoded 20/80 default — using it as the
+	// fallback for espMode 1/3 meant the circle was reacting to live
+	// data only while the ESP happened to be in Mode 2, and silently
+	// comparing against stale 20/80 the rest of the time. Use the live
+	// pair unconditionally.
+	const activeMin = minPressure2;
+	const activeMax = maxPressure2;
+	let isNormal = false;
+	let statusText, statusIcon;
+
+	if (espMode === 3) {
+		statusText = 'BYPASS'; statusIcon = '🔓';
+		normalSeconds = 0; wasNormal = false;
+		applyCircleColors(mc.normal, mc.normalBg, mc.fault, mc.faultBg, true, statusText, statusIcon);
+		document.getElementById('status-sub').textContent = 'MONITOR OFF';
+	} else if (pressureVal < activeMin || pressureVal > activeMax) {
+		statusText = 'FAULT'; statusIcon = '⚠️';
+		normalSeconds = 0; wasNormal = false;
+		applyCircleColors(mc.normal, mc.normalBg, mc.fault, mc.faultBg, false, statusText, statusIcon);
+		document.getElementById('status-sub').textContent = 'OUT OF RANGE';
+	} else {
+		statusText = 'NORMAL'; statusIcon = '⚡';
+		isNormal = true;
+		if (!wasNormal) { normalSeconds = 0; }
+		wasNormal = true;
+		applyCircleColors(mc.normal, mc.normalBg, mc.fault, mc.faultBg, true, statusText, statusIcon);
+	}
+
+	if (isNormal) {
+		normalSeconds += 2;
+		const h = Math.floor(normalSeconds / 3600);
+		const m = Math.floor((normalSeconds % 3600) / 60);
+		const s = normalSeconds % 60;
+		const fmt = h > 0
+			? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+			: `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+		document.getElementById('status-sub').textContent = '▲ ' + fmt;
+	}
+}, 2000);
+
+setInterval(() => {
+	for (let i = 1; i <= 4; i++) {
+		if (relayTimers[i] > 0) {
+			relayTimers[i]--;
+			const timerEl = document.querySelector('#relay' + i + '-timer .sec');
+			if (timerEl) timerEl.textContent = relayTimers[i];
+			if (relayTimers[i] === 0) {
+				const timerBadge = document.getElementById('relay' + i + '-timer');
+				timerBadge.classList.remove('show');
+				const toggle = document.getElementById('relay' + i + '-toggle');
+				if (toggle.checked) {
+					toggle.checked = false;
+					const row = document.getElementById('relay' + i + '-row');
+					const state = document.getElementById('relay' + i + '-state');
+					const dot = document.getElementById('relay' + i + '-dot');
+					row.classList.remove('relay-on'); row.classList.add('relay-off');
+					state.textContent = 'OFF'; dot.style.background = '#333';
+					dot.style.boxShadow = 'none';
+					relayStates[i] = false;
+				}
+			}
+		}
+	}
+}, 1000);
+
+// NOTE: there used to be a 3-second interval here that derived a fake
+// "contactor would be on/off" state for the Mode 2 panel purely from
+// pressureVal vs minPressure2/maxPressure2 in JS, with zero connection
+// to the real ESP. The firmware never auto-controls the contactor while
+// running in Mode 2 (that logic — H1_monitorPressure/F1_restart — only
+// runs inside runMode1()); Mode 2 is manual/monitor-only by design. The
+// fake interval was periodically overwriting the real, Firebase-driven
+// contactor feedback (see updateContactor() further down) with a
+// simulated value, making Mode 2 visually look like it was auto-reacting
+// to pressure exactly like Mode 1 even though the hardware wasn't.
+// Removed — Mode 2's contactor boxes are now driven exclusively by the
+// real /status/contactor1 and /status/contactor2 listeners, same as
+// Mode 1.
+
+function setContactorDisplay(panel, num, on) {
+	const box = document.getElementById('m' + panel + '-cont' + num + '-box');
+	const state = document.getElementById('m' + panel + '-cont' + num + '-state');
+	if (!box || !state) return;
+	box.className = 'cont-pair-box ' + (on ? 'on' : 'off');
+	state.textContent = on ? 'ON' : 'OFF';
+}
+
+updateEspModeRing(1);
+setMode(1);
+refreshM2Preview();
+refreshM3Preview();
+
+// ============================================================
+// FIREBASE AUTHENTICATION AND DATABASE WIRING
+// ============================================================
+(function(){
+	const firebaseConfig = {
+		apiKey: "AIzaSyDEOs8FN9EsfiVkNRd-IIxAUWLXaVaC6Is",
+		authDomain: "monk-miner-moniter.firebaseapp.com",
+		databaseURL: "https://monk-miner-moniter-default-rtdb.firebaseio.com",
+		projectId: "monk-miner-moniter",
+		storageBucket: "monk-miner-moniter.firebasestorage.app",
+		messagingSenderId: "246984219882",
+		appId: "1:246984219882:web:a483a06c7fb12c04930b93",
+		measurementId: "G-WEZRSL8PRE"
+	};
+
+	firebase.initializeApp(firebaseConfig);
+	const auth = firebase.auth();
+	const db   = firebase.database();
+
+	auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+
+	const EMAIL_TO_DEVICE = {
+		'anilji@gmail.com':   'esp-anil',
+		'manishji@gmail.com': 'esp-manish'
+	};
+	let DEVICE_ID  = null;
+	let DEV_BASE   = null;
+
+	const $ = id => document.getElementById(id);
+	const setText  = (id, v) => { const el=$(id); if(el) el.textContent = v; };
+
+	function setConnPill(state, label){
+		const pill = $('fb-conn-pill');
+		pill.classList.remove('up','down');
+		pill.classList.add(state);
+		setText('fb-conn-text', label);
+	}
+
+	async function sendCmd(cmd, opts = {}){
+		if (!DEV_BASE) return { ok: false, error: 'Not signed in / device not assigned' };
+		try {
+			if (opts.data !== undefined) await db.ref(DEV_BASE + '/commands/data').set(opts.data);
+			if (opts.timer !== undefined) await db.ref(DEV_BASE + '/commands/timer').set(opts.timer);
+			await db.ref(DEV_BASE + '/commands/cmd').set(cmd);
+			return { ok: true };
+		} catch (e) {
+			const msg = (e && (e.code || e.message)) ? (e.code || e.message) : String(e);
+			return { ok: false, error: msg };
+		}
+	}
+	window.sendCmd = sendCmd;
+
+	// ============================================================
+	// waitForEspReply(prefix, timeoutMs)
+	// After we write a command, the ESP responds by writing a result
+	// string to /commands/status (e.g. "X1: Settings saved & confirmed").
+	// This helper waits up to `timeoutMs` for a fresh status value
+	// whose text starts with the given prefix, then resolves with it.
+	// Resolves with { ok: false, timeout: true } on timeout.
+	// ============================================================
+	function waitForEspReply(prefix, timeoutMs = 10000){
+		return new Promise(resolve => {
+			if (!DEV_BASE) { resolve({ ok: false, error: 'No device' }); return; }
+			const ref = db.ref(DEV_BASE + '/commands/status');
+			let done = false;
+			let handler = null;
+			const cleanup = () => { if (handler) { try { ref.off('value', handler); } catch(_){} } };
+			const finish = (out) => { if (done) return; done = true; cleanup(); resolve(out); };
+			const timer = setTimeout(() => finish({ ok: false, timeout: true }), timeoutMs);
+
+			// Clear the status slot FIRST. This guarantees the ESP's next
+			// write is a genuine change from null — even if the ESP's reply
+			// text happens to be identical to the previous reply (e.g. the
+			// same "Settings saved & confirmed" message twice in a row),
+			// Firebase would otherwise never fire a new 'value' event for
+			// an unchanged value, causing a false timeout despite the ESP
+			// having executed the command correctly.
+			ref.set(null).then(() => {
+				if (done) return;
+				handler = ref.on('value', snap => {
+					const v = snap.val();
+					if (typeof v !== 'string') return; // null/cleared — keep waiting
+					if (v.indexOf(prefix) === 0) finish({ ok: true, message: v });
+				});
+			}).catch(e => {
+				clearTimeout(timer);
+				finish({ ok: false, error: (e && (e.code || e.message)) || String(e) });
+			});
+		});
+	}
+	window.waitForEspReply = waitForEspReply;
+
+	// ============================================================
+	// ESP presence / offline detection
+	// The ESP writes /status/pressure ~1×/sec. If we don't see any
+	// fresh writes for OFFLINE_TIMEOUT_MS, treat the ESP as offline:
+	// pressure → 0, contactors → OFF, pill → "ESP • OFFLINE".
+	// As soon as a new pressure update arrives, we go back to LIVE.
+	// ============================================================
+	const OFFLINE_TIMEOUT_MS = 15000;
+	window._lastEspPing = 0;
+	window._espOnline = false;
+
+	function setOnlineState(online){
+		if (online === window._espOnline) return;
+		window._espOnline = online;
+		const label = (window._userLabel || '') + (window._fwVersion ? ' · FW ' + window._fwVersion : '');
+		setText('fb-conn-text', online ? 'ESP • LIVE' : 'ESP • OFFLINE');
+		setText('fb-user-text', label);
+		const pill = $('fb-conn-pill');
+		if (pill){ pill.classList.remove('up','down'); pill.classList.add(online ? 'up' : 'down'); }
+		if (!online) {
+			// Force-reset UI when ESP goes offline. _lastKnownPressure is
+			// kept fresh by the live pressure listener (subscribeStatus),
+			// so it's safe to zero out the display value here without
+			// losing data — it'll be restored from that cache below when
+			// we come back online, instead of staying stuck at 0 until a
+			// coincidental future Firebase write.
+			window.pressureVal = 0;
+			window.pressureIsLive = false;
+			if (typeof setContactorDisplay === 'function') {
+				setContactorDisplay(2, 1, false); setContactorDisplay(2, 2, false);
+				setContactorDisplay(3, 1, false); setContactorDisplay(3, 2, false);
+			}
+			const box1 = $('mode1-running-status');
+			const box2 = $('mode2-running-status');
+			if (box1) { box1.textContent = 'ESP OFFLINE'; box1.style.color = '#FF5252'; box1.style.borderColor = '#FF5252'; }
+			if (box2) { box2.textContent = 'ESP OFFLINE'; box2.style.color = '#FF5252'; box2.style.borderColor = '#FF5252'; }
+		} else {
+			// Coming back online: the offline branch above force-set the
+			// contactor/relay boxes to OFF directly in the DOM, bypassing
+			// Firebase. If the real value in Firebase hasn't changed since
+			// (e.g. contactor sat continuously ON the whole time), the
+			// onValue listener never refires (true→true isn't a "change"
+			// in Firebase's eyes), so the box would stay stuck on the
+			// forced OFF state forever. Fix: re-render immediately from
+			// our last-known cached state instead of waiting for a
+			// coincidental future Firebase change.
+			if (typeof setContactorDisplay === 'function' && window.contactorState) {
+				const c1 = window.contactorState[1] === true;
+				const c2 = window.contactorState[2] === true;
+				setContactorDisplay(2, 1, c1); setContactorDisplay(2, 2, c2);
+				setContactorDisplay(3, 1, c1); setContactorDisplay(3, 2, c2);
+			}
+			if (window.relayStates) {
+				for (let i = 1; i <= 4; i++) {
+					if (window.relayStates[i] === undefined) continue;
+					const on     = window.relayStates[i] === true;
+					const toggle = $('relay' + i + '-toggle');
+					const row    = $('relay' + i + '-row');
+					const state  = $('relay' + i + '-state');
+					const dot    = $('relay' + i + '-dot');
+					if (!toggle || !row) continue;
+					toggle.checked = on;
+					if (on) {
+						row.classList.add('relay-on'); row.classList.remove('relay-off');
+						if (state) state.textContent = 'ON';
+						if (dot) { dot.style.background = 'var(--green-ok)'; dot.style.boxShadow = '0 0 6px var(--green-ok)'; }
+					} else {
+						row.classList.remove('relay-on'); row.classList.add('relay-off');
+						if (state) state.textContent = 'OFF';
+						if (dot) { dot.style.background = '#333'; dot.style.boxShadow = 'none'; }
+					}
+				}
+			}
+			// Pressure also needs to flip back to "live" immediately so the
+			// gauge ring doesn't keep showing the forced 0/"--" until the
+			// next pressure tick happens to arrive. Restore the cached
+			// last-known reading right now — the live listener will
+			// overwrite it with the true current value on its next tick
+			// regardless, this just closes the gap in between.
+			if (window._lastEspPing && (Date.now() - window._lastEspPing) <= OFFLINE_TIMEOUT_MS) {
+				if (typeof window._lastKnownPressure === 'number') {
+					window.pressureVal = window._lastKnownPressure;
+				}
+				window.pressureIsLive = true;
+			}
+		}
+	}
+	window.setOnlineState = setOnlineState;
+	// Watchdog: every 1s, check whether we got a fresh ESP write recently
+	setInterval(() => {
+		if (!DEV_BASE) return;
+		const stale = (Date.now() - window._lastEspPing) > OFFLINE_TIMEOUT_MS;
+		setOnlineState(!stale);
+	}, 1000);
+
+	function subscribeStatus(){
+		// Live Pressure integration using the 0-100 BAR sanitize logic.
+		// This is also our heartbeat — every snap = ESP is alive.
+		db.ref(DEV_BASE + '/status/pressure').on('value', snap => {
+			const raw = snap.val();
+			window.pressureVal = sanitizePressure(raw);
+			window.pressureIsLive = true;
+			window._lastKnownPressure = window.pressureVal;
+			window._lastEspPing = Date.now();
+		});
+
+		db.ref(DEV_BASE + '/status/mode').on('value', snap => {
+			const m = snap.val();
+			window._lastEspPing = Date.now();
+			if (m === 1 || m === 2) updateEspModeRing(m);
+		});
+
+		for (let i = 1; i <= 4; i++) {
+			db.ref(DEV_BASE + '/status/relay' + i).on('value', snap => {
+				window._lastEspPing = Date.now();
+				const on = snap.val() === true;
+				const toggle = $('relay' + i + '-toggle');
+				const row    = $('relay' + i + '-row');
+				const state  = $('relay' + i + '-state');
+				const dot    = $('relay' + i + '-dot');
+				if (!toggle || !row) return;
+				toggle.checked = on;
+				if (on) {
+					row.classList.add('relay-on'); row.classList.remove('relay-off');
+					state.textContent = 'ON'; dot.style.background = 'var(--green-ok)';
+					dot.style.boxShadow = '0 0 6px var(--green-ok)';
+				} else {
+					row.classList.remove('relay-on'); row.classList.add('relay-off');
+					state.textContent = 'OFF'; dot.style.background = '#333';
+					dot.style.boxShadow = 'none';
+				}
+				window.relayStates = window.relayStates || {};
+				window.relayStates[i] = on;
+			});
+		}
+
+		function updateContactor(num, on){
+			window._lastEspPing = Date.now();
+			window.contactorState = window.contactorState || {};
+			window.contactorState[num] = on;
+			// Mode 1 panel ("m2-" prefix) is the source of truth — written
+			// directly from the live Firebase value.
+			setContactorDisplay(2, num, on);
+			// Mode 2 panel ("m3-" prefix) is then synced live as a direct
+			// copy of whatever Mode 1's box is now showing — read straight
+			// off Mode 1's box rather than re-deriving it, so the two can
+			// never drift apart regardless of what else touches Mode 1.
+			const m1Box = document.getElementById('m2-cont' + num + '-box');
+			const m1On  = m1Box ? m1Box.classList.contains('on') : on;
+			setContactorDisplay(3, num, m1On);
+		}
+		db.ref(DEV_BASE + '/status/contactor1').on('value', s => updateContactor(1, s.val() === true));
+		db.ref(DEV_BASE + '/status/contactor2').on('value', s => updateContactor(2, s.val() === true));
+		db.ref(DEV_BASE + '/status/contactor').on('value', snap => {
+			const v = snap.val();
+			if (v === null || v === undefined) return;
+			const on = (v === true || v === 'ON');
+			if (window.contactorState && (window.contactorState[1] !== undefined || window.contactorState[2] !== undefined)) return;
+			updateContactor(1, on);
+			updateContactor(2, on);
+		});
+
+		// /status/online listener removed — presence is now driven by the
+		// pressure-update watchdog (setOnlineState), which is far more
+		// reliable than the firmware's one-shot "online: true" write.
+		
+		db.ref(DEV_BASE + '/status/fw').on('value', snap => {
+			window._lastEspPing = Date.now();
+			const fw = snap.val();
+			if (fw) {
+				window._fwVersion = fw;
+				const el = $('fb-user-text');
+				if (el && window._userLabel) {
+					el.textContent = window._userLabel + ' · FW ' + fw;
+				} else if (el) {
+					el.textContent = ' · FW ' + fw;
+				}
+			}
+		});
+	}
+
+	function subscribeSettings(){
+		db.ref(DEV_BASE + '/settings').on('value', snap => {
+			const s = snap.val();
+			if (!s) return;
+			setText('fetched-min-m2',              s.minp ?? '--');
+			setText('fetched-max-m2',              s.maxp ?? '--');
+			setText('fetched-on-pulse-m2',         s.op   ?? '--');
+			setText('fetched-off-pulse-m2',        s.ofp  ?? '--');
+			setText('fetched-restart-m2',          s.rt   ?? '--');
+			setText('fetched-outrange-restart-m2', s.ort  ?? '--');
+
+			// Seed the live min/max pressure globals (the ones the gauge
+			// and NORMAL/FAULT status circle read every second) from the
+			// ESP-confirmed settings the first time they arrive, so the
+			// circle reflects the real stored range instead of the
+			// hardcoded 20/80 default before the operator has touched
+			// anything. Only runs once per session — after that, the
+			// circle tracks whatever the operator has dialed in locally
+			// or last sent+confirmed via the Update button, so an
+			// in-progress unsent edit is never silently overwritten by a
+			// later /settings snapshot.
+			if (!window._settingsSeeded && typeof minPressure2 !== 'undefined') {
+				window._settingsSeeded = true;
+				if (Number.isFinite(s.minp) && Number.isFinite(s.maxp)) {
+					minPressure2 = s.minp; minPressure3 = s.minp;
+					maxPressure2 = s.maxp; maxPressure3 = s.maxp;
+					setText('min2-val-tog', s.minp); setText('min3-val-tog', s.minp);
+					setText('max2-val-tog', s.maxp); setText('max3-val-tog', s.maxp);
+					if (typeof refreshM2Preview === 'function') refreshM2Preview();
+					if (typeof refreshM3Preview === 'function') refreshM3Preview();
+				}
+			}
+		});
+	}
+
+	window.toggleRelay = function(num){
+		const toggle = $('relay' + num + '-toggle');
+		if (!toggle) return;
+		// New firmware command map:
+		//   ON  → X5, X6, X7, X8  (relays 1-4)
+		//   OFF → X13, X14, X15, X16 (relays 1-4)
+		const onMap  = { 1: 'X5',  2: 'X6',  3: 'X7',  4: 'X8'  };
+		const offMap = { 1: 'X13', 2: 'X14', 3: 'X15', 4: 'X16' };
+		const cmd = toggle.checked ? onMap[num] : offMap[num];
+		if (cmd) sendCmd(cmd);
+	};
+
+	window.adjPushTime = function(id, delta) {
+		const el = document.getElementById(id + '-time');
+		let val = parseInt(el.textContent) || 1;
+		val = Math.max(1, Math.min(999, val + delta));
+		el.textContent = val;
+		pushTimes[id] = val;
+	};
+
+	window.pushRelay = function(num){
+		if (window.pushBusy && window.pushBusy[num]) return;
+		window.pushBusy = window.pushBusy || {};
+		window.pushBusy[num] = true;
+
+		const pid = 'p' + num;
+		const sec = pushTimes[pid] || parseInt($(pid + '-time')?.textContent || '5', 10);
+		const btn = $('push-btn-r' + num);
+		const box = $('push-status-r' + num);
+		const txt = $('push-status-text-r' + num);
+
+		if (btn) { btn.disabled = true; btn.classList.add('firing'); }
+		if (box) box.className = 'push-status-box sending';
+		if (txt) txt.textContent = '▶ CMD SENT — WAITING FOR ESP REPLY…';
+
+		const cmd = (num === 1) ? 'X9' : 'X10';
+		// We listen for the final reply BEFORE actually sending the cmd
+		// so we don't miss it. ESP first replies "X9: Relay2 ON for Ns"
+		// and then later "X9: Relay2 pulse done" — we wait for the
+		// final "pulse done" line; the pulse-time + 10s safety margin.
+		const replyPromise = waitForEspReply(cmd + ':', (sec * 1000) + 10000);
+
+		sendCmd(cmd, { timer: sec }).then(sendRes => {
+			if (!sendRes.ok) {
+				if (btn) btn.classList.remove('firing');
+				if (box) box.className = 'push-status-box error';
+				if (txt) txt.textContent = '✘ SEND FAILED — ' + (sendRes.error || 'unknown');
+				setTimeout(() => {
+					if (box) box.className = 'push-status-box';
+					if (txt) txt.textContent = 'STANDBY — READY';
+					if (btn) btn.disabled = false;
+					window.pushBusy[num] = false;
+				}, 3500);
+				return;
+			}
+			// Show progress while waiting
+			let lastTick = (sec * 1000) + 10000;
+			const ticker = setInterval(() => {
+				lastTick -= 1000;
+				if (lastTick <= 0) { clearInterval(ticker); return; }
+				if (txt) txt.textContent = '⏳ WAITING FOR ESP… ' + Math.ceil(lastTick / 1000) + 's';
+			}, 1000);
+
+			replyPromise.then(reply => {
+				clearInterval(ticker);
+				if (btn) btn.classList.remove('firing');
+				if (reply.ok) {
+					const ok = /pulse done|done|OK/i.test(reply.message);
+					if (box) box.className = 'push-status-box ' + (ok ? 'success' : 'error');
+					if (txt) txt.textContent = (ok ? '✔ ESP ACK — ' : '✘ ESP REPLY: ') + reply.message;
+				} else {
+					if (box) box.className = 'push-status-box error';
+					if (txt) txt.textContent = '⏱ NO REPLY FROM ESP (timeout)';
+				}
+				setTimeout(() => {
+					if (box) box.className = 'push-status-box';
+					if (txt) txt.textContent = 'STANDBY — READY';
+					if (btn) btn.disabled = false;
+					window.pushBusy[num] = false;
+				}, 2500);
+			});
+		});
+	};
+
+	window.restartESP = function(mode){
+		const btnId = mode === 2 ? 'restart-btn-m2-real' : 'restart-btn-m' + mode;
+		const btn = $(btnId);
+		const status = $('restart-status-m' + mode);
+		if (btn) btn.classList.add('firing');
+		if (status) status.textContent = 'SENDING RESTART…';
+		sendCmd('X4').then(res => {
+			const ok = res.ok;
+			setTimeout(() => {
+				if (btn) btn.classList.remove('firing');
+				if (status) status.textContent = ok ? '✔ ESP RESTARTING…' : ('✘ FAILED — ' + (res.error || 'unknown'));
+				setTimeout(() => { if (status) status.textContent = 'STANDBY — READY TO RESTART'; }, 3500);
+			}, 400);
+		});
+	};
+
+	window.espFetchValues = function(mode = ''){
+		const btnId    = mode ? 'esp-fetch-btn-' + mode    : 'esp-fetch-btn';
+		const statusId = mode ? 'esp-fetch-status-' + mode : 'esp-fetch-status';
+		const btn    = $(btnId);
+		const status = $(statusId);
+		if (btn)    btn.disabled = true;
+		if (status) status.textContent = 'CMD SENT — WAITING FOR ESP REPLY…';
+
+		// Listen for ESP's "X2: Done" status reply BEFORE sending
+		const replyPromise = waitForEspReply('X2:', 20000);
+
+		// Show countdown
+		let secLeft = 20;
+		const ticker = setInterval(() => {
+			secLeft--;
+			if (secLeft <= 0) { clearInterval(ticker); return; }
+			if (status) status.textContent = '⏳ WAITING FOR ESP… ' + secLeft + 's';
+		}, 1000);
+
+		sendCmd('X2').then(sendRes => {
+			if (!sendRes.ok) {
+				clearInterval(ticker);
+				if (status) status.textContent = '✘ SEND FAILED — ' + (sendRes.error || 'unknown');
+				if (btn) btn.disabled = false;
+				setTimeout(() => { if (status) status.textContent = 'READY'; }, 3000);
+				return;
+			}
+			replyPromise.then(reply => {
+				clearInterval(ticker);
+				if (reply.ok) {
+					// ESP replied — now pull the freshly-written /settings node
+					db.ref(DEV_BASE + '/settings').get().then(snap => {
+						const s = snap.val();
+						if (s) {
+							['m2', 'm3'].forEach(m => {
+								setText('fetched-min-' + m,              s.minp ?? '--');
+								setText('fetched-max-' + m,              s.maxp ?? '--');
+								setText('fetched-on-pulse-' + m,         s.op   ?? '--');
+								setText('fetched-off-pulse-' + m,        s.ofp  ?? '--');
+								setText('fetched-restart-' + m,          s.rt   ?? '--');
+								setText('fetched-outrange-restart-' + m, s.ort  ?? '--');
+							});
+							// Drive the live min/max pressure globals (gauge +
+							// NORMAL/FAULT status circle) from the values the
+							// ESP just confirmed it actually has, so the
+							// circle reacts immediately to the real fetched
+							// range instead of only updating the read-only
+							// display boxes.
+							if (typeof minPressure2 !== 'undefined' && Number.isFinite(s.minp) && Number.isFinite(s.maxp)) {
+								minPressure2 = s.minp; minPressure3 = s.minp;
+								maxPressure2 = s.maxp; maxPressure3 = s.maxp;
+								setText('min2-val-tog', s.minp); setText('min3-val-tog', s.minp);
+								setText('max2-val-tog', s.maxp); setText('max3-val-tog', s.maxp);
+								if (typeof refreshM2Preview === 'function') refreshM2Preview();
+								if (typeof refreshM3Preview === 'function') refreshM3Preview();
+							}
+							if (status) status.textContent = '✔ FETCHED FROM ESP';
+						} else {
+							if (status) status.textContent = '⚠ ESP REPLIED BUT NO DATA';
+						}
+					}).catch(() => {
+						if (status) status.textContent = '✘ FETCH READ FAILED';
+					}).finally(() => {
+						if (btn) btn.disabled = false;
+						setTimeout(() => { if (status) status.textContent = 'READY'; }, 3000);
+					});
+				} else {
+					if (status) status.textContent = '⏱ NO REPLY FROM ESP (timeout)';
+					if (btn) btn.disabled = false;
+					setTimeout(() => { if (status) status.textContent = 'READY'; }, 3000);
+				}
+			});
+		});
+	};
+
+	window.espUpdateValues = function(mode = ''){
+		const btnId    = mode ? 'esp-update-btn-' + mode    : 'esp-update-btn';
+		const statusId = mode ? 'esp-update-status-' + mode : 'esp-update-status';
+		const btn    = $(btnId);
+		const status = $(statusId);
+		if (btn)    btn.disabled = true;
+		if (status) status.textContent = 'CMD SENT — WAITING FOR ESP REPLY…';
+
+		const data = {
+			// NOTE: deliberately NOT sending "mode" here — UPDATE only refreshes the
+			// 6 numeric settings, it must never change the running mode. Mode change
+			// goes through the explicit Mode-Switch confirm flow.
+			minp: parseInt($('min2-val-tog')?.textContent || '20', 10),
+			maxp: parseInt($('max2-val-tog')?.textContent || '80', 10),
+			rt:   parseInt($('m2-restart-time')?.textContent || '10', 10),
+			op:   parseInt($('m2-pulse-on')?.textContent || '3', 10),
+			ofp:  parseInt($('m2-pulse-off')?.textContent || '3', 10),
+			ort:  parseInt($('m2-outrange-restart')?.textContent || '30', 10),
+		};
+
+		// Listen for ESP's "X1: Settings saved & confirmed" BEFORE sending
+		const replyPromise = waitForEspReply('X1:', 20000);
+
+		// Visible countdown
+		let secLeft = 20;
+		const ticker = setInterval(() => {
+			secLeft--;
+			if (secLeft <= 0) { clearInterval(ticker); return; }
+			if (status) status.textContent = '⏳ WAITING FOR ESP… ' + secLeft + 's';
+		}, 1000);
+
+		sendCmd('X1', { data }).then(sendRes => {
+			if (!sendRes.ok) {
+				clearInterval(ticker);
+				if (status) status.textContent = '✘ SEND FAILED — ' + (sendRes.error || 'unknown');
+				if (btn) btn.disabled = false;
+				setTimeout(() => { if (status) status.textContent = 'READY'; }, 3500);
+				return;
+			}
+			replyPromise.then(reply => {
+				clearInterval(ticker);
+				if (reply.ok) {
+					if (status) status.textContent = '✔ ESP UPDATED — ' + reply.message;
+					// ESP confirmed it saved the new settings — commit the
+					// sent min/max pressure into the live globals that the
+					// pressure gauge and status (NORMAL/FAULT) circle read
+					// every second, so the circle reacts immediately to the
+					// confirmed value instead of waiting on a later /settings
+					// listener tick or a stray Firebase change.
+					if (typeof minPressure2 !== 'undefined') {
+						minPressure2 = data.minp; minPressure3 = data.minp;
+						maxPressure2 = data.maxp; maxPressure3 = data.maxp;
+						setText('min2-val-tog', data.minp); setText('min3-val-tog', data.minp);
+						setText('max2-val-tog', data.maxp); setText('max3-val-tog', data.maxp);
+						if (typeof refreshM2Preview === 'function') refreshM2Preview();
+						if (typeof refreshM3Preview === 'function') refreshM3Preview();
+					}
+				} else {
+					if (status) status.textContent = '⏱ NO REPLY FROM ESP (timeout)';
+				}
+				if (btn) btn.disabled = false;
+				setTimeout(() => { if (status) status.textContent = 'READY'; }, 3500);
+			});
+		});
+	};
+
+	const loginOverlay = $('login-overlay');
+	const loginEmail   = $('login-email');
+	const loginPass    = $('login-password');
+	const loginBtn     = $('login-btn');
+	const loginMsg     = $('login-msg');
+	const logoutBtn    = $('logout-btn');
+
+	function showLogin(){
+		loginOverlay.style.display = 'flex';
+		setConnPill('down', 'FIREBASE • SIGNED OUT');
+		if (logoutBtn) logoutBtn.style.display = 'none';
+	}
+	function hideLogin(){
+		loginOverlay.style.display = 'none';
+		if (logoutBtn) logoutBtn.style.display = '';
+	}
+
+	loginBtn.addEventListener('click', async () => {
+		const email = loginEmail.value.trim();
+		const pw    = loginPass.value;
+		if (!email || !pw) { loginMsg.textContent = 'Enter email and password'; return; }
+		loginBtn.disabled = true;
+		loginMsg.style.color = '#FF5252';
+		loginMsg.textContent = 'Signing in…';
+		try {
+			await auth.signInWithEmailAndPassword(email, pw);
+			loginMsg.textContent = '';
+		} catch (e) {
+			loginMsg.textContent = (e && e.message) ? e.message.replace('Firebase: ', '') : 'Sign-in failed';
+		} finally {
+			loginBtn.disabled = false;
+		}
+	});
+	[loginEmail, loginPass].forEach(inp => inp.addEventListener('keydown', e => {
+		if (e.key === 'Enter') loginBtn.click();
+	}));
+
+	logoutBtn.addEventListener('click', () => auth.signOut());
+
+	auth.onAuthStateChanged(user => {
+		if (user) {
+			const email = (user.email || '').toLowerCase();
+			const mapped = EMAIL_TO_DEVICE[email];
+			if (!mapped) {
+				loginMsg.style.color = '#FF5252';
+				loginMsg.textContent = 'This account is not assigned to any device.';
+				auth.signOut();
+				return;
+			}
+			DEVICE_ID = mapped;
+			DEV_BASE  = '/devices/' + DEVICE_ID;
+			hideLogin();
+			setConnPill('up', 'FIREBASE • CONNECTED');
+			window._userLabel = ' · ' + email + ' · ' + DEVICE_ID;
+			setText('fb-user-text', window._userLabel);
+			subscribeStatus();
+			subscribeSettings();
+		} else {
+			DEVICE_ID = null;
+			DEV_BASE  = null;
+			showLogin();
+		}
+	});
+
+	showLogin();
+})();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"7f7b0fd8732c4326aae4b9d58d5c514a","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
